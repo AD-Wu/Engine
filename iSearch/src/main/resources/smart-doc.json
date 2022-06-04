@@ -1,0 +1,12 @@
+{
+//  "serverUrl": "http://localhost:8080",
+  "isStrict": false,
+  "allInOne": true,
+  "outPath": "src/main/resources/static/api",
+  "coverOld": true,
+  "style":"xt256",//喜欢json高亮的可以设置
+  "createDebugPage": true, //启用生成debug
+  "md5EncryptedHtmlName": false,
+  "projectName": "web",
+  "allInOneDocFileName":"index.html"//自定义设置输出文档名称
+}

@@ -1,0 +1,21 @@
+spring:
+  profiles:
+    active: ${package.env}
+
+server:
+  port: 8080
+
+# xxx.properties文件的配置
+# plugin.mode=prod
+# plugin.commons[0]=xxx(jar所在文件夹) 或 xxx.jar(jar文件)
+# plugin.commons[1]
+# plugin.commons[2]
+# plugin.business[0]=xxx(jar所在文件夹) 或 xxx.jar(jar文件)
+# plugin.business[1]
+# plugin.business[2]
+plugin:
+  commons: D:\\GitCode\\Engine\\Plugin\\demo\\target
+  business:
+    - D:\\GitCode\\Engine\\Plugin\\i-linux\\target
+    - D:\\GitCode\\Engine\\Plugin\\i-window\\target
+    - D:\\GitCode\\Engine\\Plugin\\i-mac\\target

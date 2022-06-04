@@ -1,0 +1,22 @@
+安徽研发测试环境验证内容包括
+（1） msc网关鉴权，如何和营销2.0服务连接平台互信？（共享鉴权逻辑和token数据？）
+  + 验证方案 - 前端的调用路径：先通过营销2.0网关（做鉴权和登陆校验、会话构建和cookie保活），实现MSC共享营销2.0鉴权和登陆会话。
+    a.页面编排部分流量，先由营销2.0网关转发到MSC网关，后转发到Action微服务（构建MSC登陆会话），最后由Action微服务调用营销2.0微服务。
+    b.原生页面部分流量，由营销2.0网关转发到营销2.0微服务。
+（2） 基于msc开发个性化业务功能时，前端公共业务组件（选单位、选用户等）封装做好技术支撑（调用2.0通用组服务获取有关组织、用户等数据）
+  + 验证方案 - 通过服务集成方式快速将通用组能力融合进MSC，自定义组件->Action微服务->通用组服务
+（3）msc数据字典和营销2.0标准编码集成，标准编码统一在营销2.0录入，不能在营销2.0和msc两边都录入。
+  + 验证方案 - 通过服务集成方式快速将通用组能力融合进MSC，自定义组件->Action微服务【->通用组服务 ｜ 通用组二方包】
+  
+  
+1、前端：将auth_token写到cookie下（路径：/，域名：sgcc.com.cn）
+2、网关：将cookie的值写到header，以及响应时进行cookie保活
+
+spring.cloud.gateway.routes[0].id=trantor-gateway
+spring.cloud.gateway.routes[0].uri=lb://trantor-gateway
+spring.cloud.gateway.routes[0].predicates=Path=/trantor-gateway/**
+spring.cloud.gateway.routes[0].filters[0]=StripPrefix=1
+cookie.domain=sgcc.com.cn
+cookie.path=/
+cookie.names=auth_token
+cookie.age=1800

@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: nacos
+  cloud:
+    nacos:
+      discovery:
+        enabled: true
+        server-addr: ${nacos.server-addr}
+        group: ${nacos.group}
+      config:
+        enabled: true
+        refresh-enabled: true
+        server-addr: ${nacos.server-addr}
+        group: ${nacos.group}
+        file-extension: yaml
+    compatibility-verifier:
+      enabled: false
+
+nacos:
+  group: com.x
+  server-addr: 127.0.0.1:8848

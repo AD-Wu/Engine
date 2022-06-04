@@ -1,0 +1,32 @@
+{
+  "serverUrl": "http://localhost:8080",
+  "isStrict": false,
+  "allInOne": true,
+  "outPath": "src/main/resources/static/api",
+  "coverOld": true,
+  "style":"xt256",//喜欢json高亮的可以设置
+  "createDebugPage": true, //启用生成debug
+  "md5EncryptedHtmlName": false,
+  "projectName": "web",
+  "allInOneDocFileName":"index.html",//自定义设置输出文档名称
+
+  "requestHeaders": [{ //设置请求头，没有需求可以不设置
+    "name": "token",//请求头名称
+    "type": "string",//请求头类型
+    "desc": "desc",//请求头描述信息
+    "value":"token请求头的值",//不设置默认null
+    "required": false,//是否必须
+    "since": "-",//什么版本添加的改请求头
+    "pathPatterns": "/app/test/**",//请看https://gitee.com/smart-doc-team/smart-doc/wikis/请求头高级配置?sort_id=4178978
+    "excludePathPatterns":"/app/page/**"//请看https://gitee.com/smart-doc-team/smart-doc/wikis/请求头高级配置?sort_id=4178978
+  },{
+    "name": "appkey",//请求头
+    "type": "string",//请求头类型
+    "desc": "desc",//请求头描述信息
+    "value":"appkey请求头的值",//不设置默认null
+    "required": true, //是否必须
+    "pathPatterns": "/param/convert/**",//正则表达式过滤请求头,url匹配上才会添加该请求头，多个正则用分号隔开
+    "since": "-"//什么版本添加的改请求头
+  }
+  ]
+}

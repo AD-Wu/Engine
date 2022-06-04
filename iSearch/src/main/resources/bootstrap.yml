@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: isearch
+  cloud:
+    nacos:
+      discovery:
+        enabled: ${nacos.enable}
+        server-addr: ${nacos.server-addr}
+        group: ${nacos.group}
+      config:
+        enabled: ${nacos.enable}
+        refresh-enabled: true
+        server-addr: ${nacos.server-addr}
+        group: ${nacos.group}
+        file-extension: yaml
+    compatibility-verifier:
+      enabled: false
+
+nacos:
+  enable: false
+  group: com.x
+  server-addr: 127.0.0.1:8848

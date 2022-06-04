@@ -1,0 +1,10 @@
+server:
+  port: 8080
+
+author:
+  name: redis
+
+plugin:
+  dirs:
+    - D:\\GitCode\\athenaGit\\iSpringBoot\\loader\\factory\\target
+    - D:\\GitCode\\athenaGit\\iSpringBoot\\loader\\api\\target
