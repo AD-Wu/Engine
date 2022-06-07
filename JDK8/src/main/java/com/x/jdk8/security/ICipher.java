@@ -6,8 +6,8 @@ package com.x.jdk8.security;
  * @author AD
  * @date 2022/6/5 22:02
  */
-public interface IEncryptor {
-    
+public interface ICipher {
+
     /**
      * 加密
      *
@@ -16,7 +16,7 @@ public interface IEncryptor {
      * @return 加密后的字节数组
      */
     byte[] encrypt(byte[] bs);
-    
+
     /**
      * 解密
      *
@@ -25,5 +25,5 @@ public interface IEncryptor {
      * @return 解密后的字节数组
      */
     byte[] decrypt(byte[] bs);
-    
+
 }
