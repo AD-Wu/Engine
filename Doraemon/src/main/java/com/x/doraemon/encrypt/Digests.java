@@ -7,7 +7,7 @@ import java.security.NoSuchAlgorithmException;
  * @author AD
  * @date 2022/6/7 11:23
  */
-public enum MessageDigestHelper {
+public enum Digests {
 
     MD5("MD5"),
     SHA1("SHA-1"),
@@ -17,7 +17,7 @@ public enum MessageDigestHelper {
 
     private MessageDigest alg;
 
-    private MessageDigestHelper(String name) {
+    private Digests(String name) {
         try {
             this.alg = MessageDigest.getInstance(name);
         } catch (NoSuchAlgorithmException e) {

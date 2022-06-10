@@ -13,7 +13,7 @@ public class Test {
 
     public static void main(String[] args) throws Exception {
         Printer printer = new Printer();
-        for (MessageDigestHelper helper : MessageDigestHelper.values()) {
+        for (Digests helper : Digests.values()) {
             byte[] digest = helper.digest(bs);
             String hex = Converts.bytesToHex(digest);
             printer.add(helper, helper.algorithm().getDigestLength(), hex);
