@@ -1,6 +1,6 @@
 package com.x.doraemon.file;
 
-import java.io.File;
+import java.nio.file.Paths;
 
 /**
  * TODO
@@ -15,8 +15,9 @@ public class Test {
     }
 
     private static void testMonitor() throws Exception {
+        String dir = "C:\\Users\\chunquanw\\Desktop\\文件夹监控测试1";
         IFileListener listener = new RecurseListener();
-        FolderMonitor monitor = FolderMonitor.get(new File("C:\\Users\\chunquanw\\Desktop\\文件夹监控测试"), listener);
+        FolderMonitor monitor = FolderMonitor.get(Paths.get(dir), listener);
         monitor.start();
 
     }

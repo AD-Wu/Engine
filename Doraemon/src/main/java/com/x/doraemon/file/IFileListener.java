@@ -1,23 +1,23 @@
 package com.x.doraemon.file;
 
-import java.io.File;
+import java.nio.file.Path;
 
 interface IFileListener {
 
     // ------------------- 文件操作 -------------------
-    void onFileRename(String oldPath, String newPath);
+    void onFileRename(Path oldPath, Path newPath);
 
-    void onFileModify(File file);
+    void onFileModify(Path file);
 
-    void onFileCreate(File file);
+    void onFileCreate(Path file);
 
-    void onFileDelete(File file);
+    void onFileDelete(Path file);
 
     // ------------------ 文件夹操作 ------------------
-    void onFolderRename(String oldPath, String newPath);
+    void onDirRename(Path oldDir, Path newDir);
 
-    void onFolderCreate(File folder);
+    void onDirCreate(Path dir);
 
-    void onFolderDelete(File folder);
+    void onDirDelete(Path dir);
 
 }

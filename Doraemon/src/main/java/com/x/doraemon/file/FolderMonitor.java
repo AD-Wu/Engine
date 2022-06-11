@@ -4,11 +4,10 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.sun.nio.file.SensitivityWatchEventModifier;
 import com.x.doraemon.therad.LoadBalanceExecutor;
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
@@ -22,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 /**
  * 文件夹监视器
@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * 3、如果存在递归监视情况，要对文件夹操作，需要从子文件夹开始删除，否则无法操作父文件夹
  * <p>
- *
  * @Author AD
  * @Date 2020-3-25 10:08
  */
@@ -49,7 +48,7 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
 
     private volatile boolean started = false;
 
-    private File folder;
+    private Path dir;
 
     private final WatchService watcher;
 
@@ -57,44 +56,45 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
 
     private final ExecutorService monitor;
 
-    private final Cache<String, File> modifyEventCache;
+    private final Cache<String, Path> modifyEventCache;
 
     private final Set<String> validFiles;
 
-    private final Set<String> subFolders;
+    private final Set<String> subDirs;
 
-    private static Map<File, FolderMonitor> monitors = new ConcurrentHashMap<>();
+    private static Map<String, FolderMonitor> monitors = new ConcurrentHashMap<>();
 
     // ---------------------------------- 构造方法 ----------------------------------
 
-    public static FolderMonitor get(File folder, IFileListener listener) throws Exception {
+    public static FolderMonitor get(Path dir, IFileListener listener) throws Exception {
         // File的hashcode值为path小写值的hashcode
-        if (monitors.containsKey(folder)) {
-            return monitors.get(folder);
+        if (monitors.containsKey(getAbsPath(dir))) {
+            return monitors.get(getAbsPath(dir));
         } else {
-            return new FolderMonitor(folder, listener);
+            return new FolderMonitor(dir, listener);
         }
     }
 
     /**
      * 构造方法
-     *
-     * @param folder   需要监控的文件夹
+     * @param dir   需要监控的文件夹
      * @param listener 监听器对象
      * @throws Exception
      */
-    private FolderMonitor(File folder, IFileListener listener) throws Exception {
-        this.folder = folder;
-        Path path = Paths.get(folder.getPath());
+    private FolderMonitor(Path dir, IFileListener listener) throws Exception {
+        if (!Files.isDirectory(dir)) {
+            throw new Exception("dir isn't a directory");
+        }
+        this.dir = dir;
         this.watcher = FileSystems.getDefault().newWatchService();
-        path.register(watcher, events, SensitivityWatchEventModifier.LOW);
+        dir.register(watcher, events, SensitivityWatchEventModifier.LOW);
         this.listener = listener;
         this.monitor = new LoadBalanceExecutor<>("runner", 1);
         this.validFiles = new ConcurrentSkipListSet<>();
-        this.subFolders = new ConcurrentSkipListSet<>();
+        this.subDirs = new ConcurrentSkipListSet<>();
         this.modifyEventCache = CacheBuilder.newBuilder().expireAfterWrite(2, TimeUnit.SECONDS).build();
-        subFolders.add(folder.getAbsolutePath());
-        monitors.put(folder, this);
+        subDirs.add(getAbsPath(dir));
+        monitors.put(getAbsPath(dir), this);
     }
 
     // ---------------------------------- 成员方法 ----------------------------------
@@ -104,7 +104,7 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
         }
         this.started = true;
         // 启动时扫描子文件夹
-        initFolderMonitor();
+        initDirMonitor();
         monitor.execute(() -> {
             while (started && !monitor.isShutdown()) {
                 /*
@@ -116,10 +116,10 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
                     key = watcher.take();
                     List<WatchEvent<?>> events = key.pollEvents();
                     if (isRename(events)) {
-                        String oldPath = getPathFromEvent(events.get(0));
-                        String newPath = getPathFromEvent(events.get(1));
-                        if (isFolder(oldPath)) {
-                            onFolderRename(oldPath, newPath);
+                        Path oldPath = getPathFromEvent(events.get(0));
+                        Path newPath = getPathFromEvent(events.get(1));
+                        if (isDir(oldPath)) {
+                            onDirRename(oldPath, newPath);
                         } else {
                             onFileRename(oldPath, newPath);
                         }
@@ -127,36 +127,35 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
                         // file.exist()当文件被删除时，只是被标记为删除，直到所有的句柄关闭，才返回false，否则为true。所以用这个方法判断文件是否存在不准确
                         if (events.size() == 0) {
                             // 根文件夹被删除
-                            onFolderDelete(folder);
+                            onDirDelete(dir);
                         } else {
                             for (WatchEvent event : events) {
                                 Path context = (Path) event.context();
-                                // filename是当前监控的文件夹的直接文件名或文件夹名，不能获取到子文件夹里的filename
+                                // filename是当前监控的文件夹(dir)的一级事件名(文件|文件夹),不能获取到多层级的事件信息
                                 String filename = context.getFileName().toString();
                                 if (isInvalidEvent(filename)) {
                                     continue;
                                 }
-                                File file = new File(folder.getAbsolutePath() + File.separator + filename);
+                                Path change = Paths.get(getAbsPath(dir), filename);
                                 WatchEvent.Kind kind = event.kind();// modify、create、delete、overflow
                                 switch (kind.name()) {
                                     case WatchEventEnum.CREATE:
-                                        if (file.isFile()) {
-                                            onFileCreate(file);
+                                        if (Files.isDirectory(change)) {
+                                            onDirCreate(change);
                                         } else {
-                                            onFolderCreate(file);
+                                            onFileCreate(change);
                                         }
                                         break;
+                                    // 文件重新命名并不是modify,而是delete+create.这里指文件内容的修改
                                     case WatchEventEnum.MODIFY:
-                                        if (file.isFile()) {
-                                            onFileModify(file);
-                                        }
+                                        onFileModify(change);
                                         break;
                                     case WatchEventEnum.DELETE:
-                                        if (isFolder(file.getAbsolutePath())) {
+                                        if (isDir(change)) {
                                             // 自身删除事件会先触发events=0的事件，父监听器会在触发一次
-                                            onFolderDelete(file);
+                                            onDirDelete(change);
                                         } else {
-                                            onFileDelete(file);
+                                            onFileDelete(change);
                                         }
                                         break;
                                 }
@@ -189,7 +188,7 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
         try {
             started = false;
             validFiles.clear();
-            subFolders.clear();
+            subDirs.clear();
             watcher.close();
             monitor.shutdown();
         } catch (IOException e) {
@@ -200,70 +199,68 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
     // ---------------------------------- 私有方法 ----------------------------------
 
 
-    private void onFileRename(String oldPath, String newPath) {
-        listener.onFileRename(oldPath, newPath);
+    private void onFileRename(Path oldFile, Path newFile) {
+        listener.onFileRename(oldFile, newFile);
     }
 
 
-    private void onFileDelete(File file) {
-        if (!file.exists()) {
+    private void onFileDelete(Path file) {
+        if (Files.notExists(file)) {
             listener.onFileDelete(file);
         }
     }
 
-    private void onFileCreate(File file) {
+    private void onFileCreate(Path file) throws IOException {
         /*
          - 修改已存在文件时,会产生modify、create事件,需过滤create
          - 如果是复制,会产生create、modify事件，复制由modify处理
         */
-        if (file.isFile()) {
+        if (Files.exists(file) && !Files.isDirectory(file)) {
             listener.onFileCreate(file);
-            if (file.length() > 0) {
-                modifyEventCache.put(file.getAbsolutePath(), file);
+            if (Files.size(file) > 0) {
+                modifyEventCache.put(file.toAbsolutePath().toString(), file);
                 listener.onFileModify(file);
             }
         }
     }
 
-    private void onFileModify(File file) {
-        if (file.exists()) {
-            if (file.isFile()) {
-                // 修改时，会触发2次修改事件
-                File oldFile = modifyEventCache.getIfPresent(file.getAbsolutePath());
-                // 同一个事件在2s内没有处理过（不为null，表示在2s内处理过，不进行处理）
-                if (oldFile == null) {
-                    // 标识已处理该事件
-                    modifyEventCache.put(file.getAbsolutePath(), file);
-                    // 判断文件内容是否为：有效修改
-                    if (file.length() > 0) {
-                        // 缓存有效文件名称
-                        validFiles.add(file.getAbsolutePath());
-                        // 通知修改内容
+    private void onFileModify(Path file) throws IOException {
+        if (Files.exists(file) && !Files.isDirectory(file)) {
+            // 修改时，会触发2次修改事件
+            Path oldFile = modifyEventCache.getIfPresent(getAbsPath(file));
+            // 同一个事件在2s内没有处理过（不为null，表示在2s内处理过，不进行处理）
+            if (oldFile == null) {
+                // 标识已处理该事件
+                modifyEventCache.put(getAbsPath(file), file);
+                // 判断文件内容是否为：有效修改
+                if (Files.size(file) > 0) {
+                    // 缓存有效文件名称
+                    validFiles.add(getAbsPath(file));
+                    // 通知修改内容
+                    listener.onFileModify(file);
+                }
+                // 文件内容为空，可能是全删除，也可能是复制空文件（复制的空文件不触发modify，全删除内容则触发）
+                else {
+                    // 文件之前有内容，现在全删除了
+                    if (validFiles.contains(getAbsPath(file))) {
+                        // 通知修改
                         listener.onFileModify(file);
-                    }
-                    // 文件内容为空，可能是全删除，也可能是复制空文件（复制的空文件不触发modify，全删除内容则触发）
-                    else {
-                        // 文件之前有内容，现在全删除了
-                        if (validFiles.contains(file.getAbsolutePath())) {
-                            // 通知修改
-                            listener.onFileModify(file);
-                        } else {
-                            // 标识该文件为无效文件
-                            validFiles.remove(file.getAbsolutePath());
-                        }
+                    } else {
+                        // 标识该文件为无效文件
+                        validFiles.remove(getAbsPath(file));
                     }
                 }
             }
         }
     }
 
-    private void onFolderRename(String oldPath, String newPath) {
-        subFolders.remove(oldPath);
-        subFolders.add(newPath);
-        FolderMonitor oldMonitor = monitors.remove(oldPath);
+    private void onDirRename(Path oldDir, Path newDir) {
+        subDirs.remove(getAbsPath(oldDir));
+        subDirs.add(getAbsPath(newDir));
+        FolderMonitor oldMonitor = monitors.remove(oldDir);
         if (oldMonitor != null) {
             try {
-                FolderMonitor newMonitor = get(new File(newPath), oldMonitor.listener);
+                FolderMonitor newMonitor = get(newDir, oldMonitor.listener);
                 if (oldMonitor.started) {
                     oldMonitor.stop();
                     newMonitor.start();
@@ -272,40 +269,36 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
                 e.printStackTrace();
             }
         }
-        listener.onFolderRename(oldPath, newPath);
+        listener.onDirRename(oldDir, newDir);
     }
 
-    private void onFolderCreate(File folder) throws Exception {
-        subFolders.add(folder.getAbsolutePath());
-        listener.onFolderCreate(folder);
+    private void onDirCreate(Path dir) throws Exception {
+        subDirs.add(getAbsPath(dir));
+        listener.onDirCreate(dir);
     }
 
 
-    private void onFolderDelete(File file) {
-        if (isFolder(file.getAbsolutePath())) {
-            subFolders.remove(file.getAbsolutePath());
-            FolderMonitor monitor = monitors.remove(file.getAbsolutePath());
+    private void onDirDelete(Path dir) {
+        if (isDir(dir)) {
+            subDirs.remove(getAbsPath(dir));
+            listener.onDirDelete(dir);
+            FolderMonitor monitor = monitors.remove(getAbsPath(dir));
             if (monitor != null) {
                 if (monitor.started) {
                     monitor.stop();
                 }
-                listener.onFolderDelete(file);
             }
         }
     }
 
-    private void initFolderMonitor() {
+    private void initDirMonitor() {
         // 获取下级文件夹，没有递归获取
-        File[] files = folder.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory();
-            }
-        });
-        for (File file : files) {
-            subFolders.add(file.getAbsolutePath());
+        try {
+            Stream<Path> paths = Files.list(dir);
+            paths.filter(p -> Files.isDirectory(p)).forEach(p -> subDirs.add(getAbsPath(p)));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
     }
 
     protected boolean isInvalidEvent(String filename) {
@@ -326,22 +319,27 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
         return false;
     }
 
-    private String getPathFromEvent(WatchEvent<?> event) {
-        Path context = (Path) event.context();
-        String filename = context.getFileName().toString();
-        return this.folder + File.separator + filename;
+    private Path getPathFromEvent(WatchEvent<?> event) {
+        // 当前path只是获取该事件的文件名,并不是绝对路径,需修正
+        Path path = (Path) event.context();
+        // 修改为绝对路径
+        return dir.resolve(path.getFileName());
     }
 
-    private boolean isFolder(String path) {
-        if (subFolders.contains(path)) {
+    private boolean isDir(Path path) {
+        if (subDirs.contains(getAbsPath(path))) {
             return true;
         }
         return false;
     }
 
+    private static String getAbsPath(Path path) {
+        return path.toAbsolutePath().toString();
+    }
+
     @Override
     public int compareTo(FolderMonitor o) {
-        return folder.compareTo(o.folder);
+        return dir.compareTo(o.dir);
     }
 
     private static class WatchEventEnum {
