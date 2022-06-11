@@ -11,7 +11,6 @@ import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.security.SecureRandom;
 
 /**
  * DES加密算法
@@ -27,14 +26,22 @@ public class DES implements ICipher {
      */
     private static final byte[] IV = "12345678".getBytes(StandardCharsets.UTF_8);
     
+    /**
+     * 算法名
+     */
     private static final String DES = Encrypt.DES.toString();
     
-    // ------------------------ 变量定义 ------------------------
+    /**
+     * 算法DES等价于DES/ECB/PCKS5Padding，默认模式为ECB
+     */
+    private static final Encrypt.Mode DEFAULT_MODE = Encrypt.Mode.ECB;
     
     /**
-     * 填充模式，Java仅支持PCKS5Padding
+     * 默认填充模式，Java仅支持PCKS5Padding
      */
     private static final Encrypt.Padding PADDING = Encrypt.Padding.Pkcs5Padding;
+    
+    // ------------------------ 变量定义 ------------------------
     
     /**
      * 秘钥（字节数组）
@@ -54,15 +61,16 @@ public class DES implements ICipher {
     // ------------------------ 构造方法 ------------------------
     
     public DES(String password) {
-        this(password.getBytes(StandardCharsets.UTF_8), null);
+        this(password.getBytes(StandardCharsets.UTF_8), DEFAULT_MODE);
     }
     
     public DES(String password, Encrypt.Mode mode) {
         this(password.getBytes(StandardCharsets.UTF_8), mode);
     }
     
+    // 默认的是ECB模式的加密，mode为空时等价与ECB模式
     public DES(byte[] password) {
-        this(password, null);
+        this(password, DEFAULT_MODE);
     }
     
     public DES(byte[] password, Encrypt.Mode mode) {
@@ -110,18 +118,14 @@ public class DES implements ICipher {
         Key key = generateKey(password);
         // 获取加密算法
         Cipher cipher = Cipher.getInstance(algorithm);
-        if (mode == null) {
-            cipher.init(cipherMode, key, new SecureRandom());
+        // ECB模式不支持IV（ECB模式是最基本的工作模式）
+        if (mode == null || Encrypt.Mode.ECB == mode) {
+            cipher.init(cipherMode, key);
         } else {
-            // ECB模式不支持IV
-            if (Encrypt.Mode.ECB == mode) {
-                cipher.init(cipherMode, key);
-            } else {
-                // 创建向量
-                IvParameterSpec ivSpec = new IvParameterSpec(IV);
-                // 初始化加密机
-                cipher.init(cipherMode, key, ivSpec);
-            }
+            // 创建向量
+            IvParameterSpec ivSpec = new IvParameterSpec(IV);
+            // 初始化加密机
+            cipher.init(cipherMode, key, ivSpec);
         }
         return cipher;
     }

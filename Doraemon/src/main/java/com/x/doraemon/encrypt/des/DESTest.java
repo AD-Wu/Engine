@@ -23,7 +23,7 @@ public class DESTest {
         String msgHex = Converts.bytesToHex(msg);
         System.out.println(msgHex);
         Printer printer = new Printer();
-        printer.add("mode", "encrypt", "decrypt");
+        printer.add("mode", "algorithm","encrypt", "decrypt");
         Encrypt.Mode[] modes = Encrypt.Mode.values();
         List<Encrypt.Mode> modeList = new ArrayList<>();
         for (Encrypt.Mode mode : modes) {
@@ -36,7 +36,7 @@ public class DESTest {
             byte[] decrypt = des.decrypt(encrypt);
             String enHex = Converts.bytesToHex(encrypt);
             String deHex = Converts.bytesToHex(decrypt);
-            printer.add(mode, enHex, deHex);
+            printer.add(mode, des.algorithm(),enHex, deHex);
         }
         printer.print();
     }
