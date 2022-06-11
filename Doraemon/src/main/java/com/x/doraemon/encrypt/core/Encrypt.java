@@ -12,13 +12,15 @@ public enum Encrypt {
     
     public static enum Mode {
         /**
-         * Cipher-block chaining，密码分组链接模式
-         */
-        CBC,
-        /**
+         * 基本的工作模式
          * Electronic code book，电子密码本模式
          */
         ECB,
+        /**
+         * 推荐
+         * Cipher-block chaining，密码分组链接模式
+         */
+        CBC,
         /**
          * Propagating cipher-block chaining，明文密码块链接模式
          */
@@ -39,6 +41,7 @@ public enum Encrypt {
     
     public static enum Padding {
         NoPadding,
+        ZeroPadding,
         Pkcs5Padding,
         Pkcs7Padding,
         Iso7816Padding,
