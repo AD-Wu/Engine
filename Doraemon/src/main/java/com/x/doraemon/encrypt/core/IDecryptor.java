@@ -11,5 +11,5 @@ public interface IDecryptor {
      * @param bs 需解密的字节数组
      * @return 解密后的字节数组
      */
-    byte[] decrypt(byte[] bs);
+    byte[] decrypt(byte[] bs)throws Exception;
 }

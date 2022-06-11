@@ -10,5 +10,5 @@ public interface IEncryptor {
      * @param bs 需加密的字节数组
      * @return 加密后的字节数组
      */
-    byte[] encrypt(byte[] bs);
+    byte[] encrypt(byte[] bs)throws Exception;
 }
