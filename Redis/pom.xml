@@ -13,11 +13,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.x</groupId>
-            <artifactId>Plugin</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
             <version>4.2.2</version>
