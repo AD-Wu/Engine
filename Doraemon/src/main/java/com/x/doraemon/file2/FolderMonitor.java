@@ -77,7 +77,7 @@ public class FolderMonitor implements Comparable<FolderMonitor> {
 
     /**
      * 构造方法
-     * @param folder   需要监控的文件夹
+     * @param dir   需要监控的文件夹
      * @param listener 监听器对象
      * @throws Exception
      */
