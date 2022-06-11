@@ -17,7 +17,7 @@ import java.security.Key;
  * @author AD
  * @date 2022/6/11 12:33
  */
-public class DES implements ICipher {
+public final class DES implements ICipher {
     
     // ------------------------ 常量定义 ------------------------
     
@@ -68,7 +68,7 @@ public class DES implements ICipher {
         this(password.getBytes(StandardCharsets.UTF_8), mode);
     }
     
-    // 默认的是ECB模式的加密，mode为空时等价与ECB模式
+    // ECB是基本的模式，mode为空时等价与ECB模式
     public DES(byte[] password) {
         this(password, DEFAULT_MODE);
     }
@@ -120,11 +120,12 @@ public class DES implements ICipher {
         Cipher cipher = Cipher.getInstance(algorithm);
         // ECB模式不支持IV（ECB模式是最基本的工作模式）
         if (mode == null || Encrypt.Mode.ECB == mode) {
+            // 初始化
             cipher.init(cipherMode, key);
         } else {
             // 创建向量
             IvParameterSpec ivSpec = new IvParameterSpec(IV);
-            // 初始化加密机
+            // 初始化
             cipher.init(cipherMode, key, ivSpec);
         }
         return cipher;
