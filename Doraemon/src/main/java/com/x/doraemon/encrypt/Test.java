@@ -18,9 +18,9 @@ public class Test {
 
     public static void main(String[] args) throws Exception {
         byte[] msg = "hello world".getBytes(StandardCharsets.UTF_8);
-        byte[] desPwd = "DES-1234".getBytes();
-        byte[] tripleDesPwd = "DES-12345678DES-12345678".getBytes();
-        byte[] aesPwd = "AES-12345678AES-12345678".getBytes();
+        byte[] desPwd = "12345678".getBytes();
+        byte[] tripleDesPwd = "12345678|2345678|2345678".getBytes();
+        byte[] aesPwd = "12345678|2345678".getBytes();
         testDigest(msg);
         System.out.println("---------------------------------");
         testDES(msg, desPwd);

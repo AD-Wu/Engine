@@ -1,9 +1,7 @@
-package com.x.doraemon.encrypt.des;
+package com.x.doraemon.encrypt.core;
 
 import com.x.doraemon.Strings;
-import com.x.doraemon.encrypt.core.Encrypt;
 import com.x.doraemon.encrypt.core.Encrypt.Mode;
-import com.x.doraemon.encrypt.core.ICipher;
 import java.security.Key;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -19,7 +17,7 @@ import javax.crypto.spec.IvParameterSpec;
  * @author AD
  * @date 2022/6/11 12:33
  */
-public abstract class BaseDES implements ICipher {
+public abstract class BaseCipher implements ICipher {
 
     // ------------------------ 常量定义 ------------------------
 
@@ -62,7 +60,7 @@ public abstract class BaseDES implements ICipher {
      * 构造函数
      * @param password 密钥(DES密钥长度8,TripleDES密钥长度24)
      */
-    protected BaseDES(byte[] password) {
+    protected BaseCipher(byte[] password) {
         this(password, Mode.ECB, password);
     }
 
@@ -71,7 +69,7 @@ public abstract class BaseDES implements ICipher {
      * @param password 密钥(DES密钥长度8,TripleDES密钥长度24)
      * @param mode     加密模式(DES支持: ECB、CBC、PCBC、CFB、OFB、CTR; TripleDES支持: ECB、CBC)
      */
-    protected BaseDES(byte[] password, Encrypt.Mode mode) {
+    protected BaseCipher(byte[] password, Encrypt.Mode mode) {
         this(password, mode, password);
     }
 
@@ -81,12 +79,12 @@ public abstract class BaseDES implements ICipher {
      * @param mode     加密模式(DES支持: ECB、CBC、PCBC、CFB、OFB、CTR; TripleDES支持: ECB、CBC)
      * @param iv       向量(非ECB模式需要, 长度固定为8, 默认和密码一样)
      */
-    protected BaseDES(byte[] password, Encrypt.Mode mode, byte[] iv) {
+    protected BaseCipher(byte[] password, Encrypt.Mode mode, byte[] iv) {
         if (password == null || password.length < minPasswordLength()) {
             throw new RuntimeException("密码不能小于" + minPasswordLength() + "位");
         }
-        if (iv == null || iv.length < 8) {
-            throw new RuntimeException("向量必须等于8位");
+        if (iv == null || iv.length < ivLength()) {
+            throw new RuntimeException("向量必须等于" + ivLength() + "位");
         }
         this.password = password;
         this.iv = fixIV(iv);
@@ -158,16 +156,22 @@ public abstract class BaseDES implements ICipher {
     protected abstract Key generateKey(byte[] password) throws Exception;
 
     /**
-     * 最小密码长度(DES: 8位, TripleDES: 24位)
+     * 最小密码长度(DES: 8位, TripleDES: 24位, AES: 16位)
      * @return
      */
     protected abstract int minPasswordLength();
 
+    /**
+     * 向量长度(DES|TripleDES: 8位, AES: 16位)
+     * @return
+     */
+    protected abstract int ivLength();
+
     // ------------------------ 私有方法 ------------------------
 
-    private byte[] fixIV(byte[] iv) {
-        byte[] ivs = new byte[8];
-        System.arraycopy(iv, 0, ivs, 0, 8);
+    protected byte[] fixIV(byte[] iv) {
+        byte[] ivs = new byte[ivLength()];
+        System.arraycopy(iv, 0, ivs, 0, ivLength());
         return ivs;
     }
 }

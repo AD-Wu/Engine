@@ -1,5 +1,6 @@
 package com.x.doraemon.encrypt.des;
 
+import com.x.doraemon.encrypt.core.BaseCipher;
 import com.x.doraemon.encrypt.core.Encrypt;
 import com.x.doraemon.encrypt.core.Encrypt.Mode;
 import java.security.Key;
@@ -12,7 +13,7 @@ import javax.crypto.spec.SecretKeySpec;
  * @author AD
  * @date 2022/6/12 14:08
  */
-public final class DES3 extends BaseDES {
+public final class DES3 extends BaseCipher {
 
     // ------------------------ 构造方法 ------------------------
 
@@ -44,5 +45,10 @@ public final class DES3 extends BaseDES {
     @Override
     protected int minPasswordLength() {
         return 24;
+    }
+
+    @Override
+    protected int ivLength() {
+        return 8;
     }
 }
