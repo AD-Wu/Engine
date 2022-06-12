@@ -8,7 +8,7 @@ import javax.crypto.spec.IvParameterSpec;
 
 /**
  * DES加密算法
- * 模式支持: ECB、CBC、PCBC、CFB、OFB、CTR
+ * 模式支持: ECB、CBC、CFB、OFB、CTR
  * 填充支持: PCKS5Padding
  * </br>
  * TripleDES加密算法
@@ -50,7 +50,7 @@ public abstract class BaseCipher implements ICipher {
 
     /**
      * 完整的算法名
-     * 算法/加密模式/填充模式（DES|TripleDES 或 DES|TripleDES/CBC/PCKS5Padding）
+     * 算法/加密模式/填充模式（DES|TripleDES|AES 或 DES|TripleDES|AES/CBC/PCKS5Padding）
      */
     protected final String algorithm;
 
@@ -58,7 +58,7 @@ public abstract class BaseCipher implements ICipher {
 
     /**
      * 构造函数
-     * @param password 密钥(DES密钥长度8,TripleDES密钥长度24)
+     * @param password 密钥(DES密钥长度8, TripleDES密钥长度24, AES密钥长度16)
      */
     protected BaseCipher(byte[] password) {
         this(password, Mode.ECB, password);
