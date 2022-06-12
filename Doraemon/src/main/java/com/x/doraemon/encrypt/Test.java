@@ -16,11 +16,11 @@ import java.nio.charset.StandardCharsets;
  */
 public class Test {
 
-    public static void main(String[] args)throws Exception {
+    public static void main(String[] args) throws Exception {
         byte[] msg = "hello world".getBytes(StandardCharsets.UTF_8);
-        String desPwd = "DES-1234";
-        String tripleDesPwd = "DES-12345678DES-12345678";
-        String aesPwd = "AES-12345678AES-12345678";
+        byte[] desPwd = "DES-1234".getBytes();
+        byte[] tripleDesPwd = "DES-12345678DES-12345678".getBytes();
+        byte[] aesPwd = "AES-12345678AES-12345678".getBytes();
         testDigest(msg);
         System.out.println("---------------------------------");
         testDES(msg, desPwd);
@@ -41,14 +41,14 @@ public class Test {
         printer.print();
     }
 
-    private static void testDES(byte[] msg, String pwd) throws Exception {
+    private static void testDES(byte[] msg, byte[] pwd) throws Exception {
         String msgHex = Converts.bytesToHex(msg);
         System.out.println(msgHex);
 
         Printer printer = new Printer();
         printer.add("mode", "algorithm", "encrypt", "decrypt");
         for (Encrypt.Mode mode : Encrypt.Mode.values()) {
-            ICipher des = new DES(pwd.getBytes(), mode);
+            ICipher des = new DES(pwd, mode);
             byte[] encrypt = des.encrypt(msg);
             byte[] decrypt = des.decrypt(encrypt);
             String enHex = Converts.bytesToHex(encrypt);
@@ -58,14 +58,14 @@ public class Test {
         printer.print();
     }
 
-    private static void testDES3(byte[] msg, String pwd) throws Exception {
+    private static void testDES3(byte[] msg, byte[] pwd) throws Exception {
         String msgHex = Converts.bytesToHex(msg);
         System.out.println(msgHex);
 
         Printer printer = new Printer();
         printer.add("mode", "algorithm", "encrypt", "decrypt");
         for (Encrypt.Mode mode : Encrypt.Mode.values()) {
-            ICipher des3 = new DES3(pwd.getBytes(), mode);
+            ICipher des3 = new DES3(pwd, mode);
             byte[] encrypt = des3.encrypt(msg);
             byte[] decrypt = des3.decrypt(encrypt);
             String enHex = Converts.bytesToHex(encrypt);
@@ -75,14 +75,14 @@ public class Test {
         printer.print();
     }
 
-    private static void testAES(byte[] msg, String pwd) throws Exception {
+    private static void testAES(byte[] msg, byte[] pwd) throws Exception {
         String msgHex = Converts.bytesToHex(msg);
         System.out.println(msgHex);
 
         Printer printer = new Printer();
         printer.add("mode", "algorithm", "encrypt", "decrypt");
         for (Encrypt.Mode mode : Encrypt.Mode.values()) {
-            ICipher des3 = new AES(pwd.getBytes(),mode);
+            ICipher des3 = new AES(pwd, mode);
             byte[] encrypt = des3.encrypt(msg);
             byte[] decrypt = des3.decrypt(encrypt);
             String enHex = Converts.bytesToHex(encrypt);
