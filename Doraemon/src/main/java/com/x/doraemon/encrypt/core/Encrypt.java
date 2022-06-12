@@ -24,10 +24,6 @@ public enum Encrypt {
          */
         CBC,
         /**
-         * Propagating cipher-block chaining，明文密码块链接模式
-         */
-        PCBC,
-        /**
          * Cipher feedback，密文反馈模式
          */
         CFB,
