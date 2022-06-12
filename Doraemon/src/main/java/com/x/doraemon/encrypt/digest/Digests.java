@@ -1,4 +1,4 @@
-package com.x.doraemon.encrypt;
+package com.x.doraemon.encrypt.digest;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
