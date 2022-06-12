@@ -3,7 +3,10 @@ package com.x.doraemon.encrypt.core;
 import com.x.doraemon.Strings;
 import com.x.doraemon.encrypt.core.Encrypt.Mode;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 /**
@@ -122,6 +125,15 @@ public abstract class BaseCipher implements ICipher {
         return cipher.doFinal(bs);
     }
 
+    // ------------------------ 保护方法 ------------------------
+
+    protected byte[] generatePasswordKey() throws NoSuchAlgorithmException {
+        KeyGenerator gen = KeyGenerator.getInstance(getEncrypt().toString());
+        gen.init(minPasswordLength());
+        SecretKey key = gen.generateKey();
+        return key.getEncoded();
+    }
+
     // ------------------------ 私有方法 ------------------------
 
     private Cipher getCipher(int cipherMode) throws Exception {
@@ -169,7 +181,7 @@ public abstract class BaseCipher implements ICipher {
 
     // ------------------------ 私有方法 ------------------------
 
-    protected byte[] fixIV(byte[] iv) {
+    private byte[] fixIV(byte[] iv) {
         byte[] ivs = new byte[ivLength()];
         System.arraycopy(iv, 0, ivs, 0, ivLength());
         return ivs;
