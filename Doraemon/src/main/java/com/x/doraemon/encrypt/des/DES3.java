@@ -30,7 +30,6 @@ public final class DES3 extends BaseDES {
     }
 
     public static ICipher mode(String password, Encrypt.Mode mode, String iv) {
-        mode = (mode == null || mode == Mode.ECB) ? Mode.ECB : Mode.CBC;
         return new DES3(password.getBytes(), mode, iv.getBytes());
     }
 

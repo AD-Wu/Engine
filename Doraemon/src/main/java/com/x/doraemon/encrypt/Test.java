@@ -3,7 +3,6 @@ package com.x.doraemon.encrypt;
 import com.x.doraemon.Converts;
 import com.x.doraemon.Printer;
 import com.x.doraemon.encrypt.core.Encrypt;
-import com.x.doraemon.encrypt.core.Encrypt.Mode;
 import com.x.doraemon.encrypt.core.ICipher;
 import com.x.doraemon.encrypt.des.DES;
 import com.x.doraemon.encrypt.des.DES3;
@@ -62,9 +61,6 @@ public class Test {
         Printer printer = new Printer();
         printer.add("mode", "algorithm", "encrypt", "decrypt");
         for (Encrypt.Mode mode : Encrypt.Mode.values()) {
-            if (Mode.ECB != mode && Mode.CBC != mode) {
-                continue;
-            }
             ICipher des3 = DES3.mode(pwd, mode, pwd);
             byte[] encrypt = des3.encrypt(msg);
             byte[] decrypt = des3.decrypt(encrypt);

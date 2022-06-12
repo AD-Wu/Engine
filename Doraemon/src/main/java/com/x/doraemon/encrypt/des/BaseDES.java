@@ -26,7 +26,7 @@ public abstract class BaseDES implements ICipher {
     /**
      * 默认填充模式，Java仅支持PCKS5Padding
      */
-    protected static final Encrypt.Padding PADDING = Encrypt.Padding.Pkcs5Padding;
+    protected static final Encrypt.Padding PADDING = Encrypt.Padding.PKCS5Padding;
 
     // ------------------------ 变量定义 ------------------------
 

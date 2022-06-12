@@ -44,7 +44,7 @@ public enum Encrypt {
     public static enum Padding {
         NoPadding,
         ZeroPadding,
-        Pkcs5Padding,
+        PKCS5Padding,
         Iso7816Padding,
         Ansix923Padding;
     }
