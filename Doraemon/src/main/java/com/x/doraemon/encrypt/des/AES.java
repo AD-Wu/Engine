@@ -6,25 +6,21 @@ import java.security.Key;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * TripleDES加密算法
- * 模式支持: ECB、CBC
- * 填充支持: PCKS5Padding
  * @author AD
- * @date 2022/6/12 14:08
+ * @date 2022/6/12 15:51
  */
-public final class DES3 extends BaseDES {
+public class AES extends BaseDES {
 
     // ------------------------ 构造方法 ------------------------
-
-    public DES3(byte[] password) {
+    public AES(byte[] password) {
         super(password);
     }
 
-    public DES3(byte[] password, Mode mode) {
+    public AES(byte[] password, Mode mode) {
         super(password, mode);
     }
 
-    public DES3(byte[] password, Mode mode, byte[] iv) {
+    public AES(byte[] password, Mode mode, byte[] iv) {
         super(password, mode, iv);
     }
 
@@ -32,7 +28,7 @@ public final class DES3 extends BaseDES {
 
     @Override
     protected Encrypt getEncrypt() {
-        return Encrypt.TripleDES;
+        return Encrypt.AES;
     }
 
     @Override
@@ -43,6 +39,6 @@ public final class DES3 extends BaseDES {
 
     @Override
     protected int minPasswordLength() {
-        return 24;
+        return 8;
     }
 }

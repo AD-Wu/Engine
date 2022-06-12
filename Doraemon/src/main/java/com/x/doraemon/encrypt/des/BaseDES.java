@@ -61,6 +61,23 @@ public abstract class BaseDES implements ICipher {
     /**
      * 构造函数
      * @param password 密钥(DES密钥长度8,TripleDES密钥长度24)
+     */
+    protected BaseDES(byte[] password) {
+        this(password, Mode.ECB, password);
+    }
+
+    /**
+     * 构造函数
+     * @param password 密钥(DES密钥长度8,TripleDES密钥长度24)
+     * @param mode     加密模式(DES支持: ECB、CBC、PCBC、CFB、OFB、CTR; TripleDES支持: ECB、CBC)
+     */
+    protected BaseDES(byte[] password, Encrypt.Mode mode) {
+        this(password, mode, password);
+    }
+
+    /**
+     * 构造函数
+     * @param password 密钥(DES密钥长度8,TripleDES密钥长度24)
      * @param mode     加密模式(DES支持: ECB、CBC、PCBC、CFB、OFB、CTR; TripleDES支持: ECB、CBC)
      * @param iv       向量(非ECB模式需要, 长度固定为8, 默认和密码一样)
      */
