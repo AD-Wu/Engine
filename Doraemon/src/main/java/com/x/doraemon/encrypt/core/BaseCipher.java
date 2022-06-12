@@ -1,7 +1,10 @@
 package com.x.doraemon.encrypt.core;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import com.x.doraemon.Strings;
 import com.x.doraemon.encrypt.core.Encrypt.Mode;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.Cipher;
@@ -104,14 +107,43 @@ public abstract class BaseCipher implements ICipher {
     }
 
     @Override
+    public String mode() {
+        return mode.toString();
+    }
+
+    @Override
     public byte[] decrypt(byte[] bs) throws Exception {
         if (bs == null || bs.length == 0) {
             return bs;
         }
         // 获取解密机
         Cipher cipher = getCipher(Cipher.DECRYPT_MODE);
+        int blockSize = cipher.getBlockSize();
+        int outputSize = cipher.getOutputSize(blockSize);
+        byte[] in = new byte[blockSize];
+        byte[] out = new byte[outputSize];
+        ByteArrayInputStream input = new ByteArrayInputStream(bs);
+        ByteOutputStream output = new ByteOutputStream();
+        int read = 0;
+        boolean more = true;
+        while (more) {
+            read = input.read(in);
+            if (read == blockSize) {
+                cipher.update(in, 0, read, out);
+                output.write(out);
+            } else {
+                more = false;
+            }
+        }
+        if (read > 0) {
+            out = cipher.doFinal(in, 0, read);
+        } else {
+            out = cipher.doFinal();
+        }
+        output.write(out);
         // 解密
-        return cipher.doFinal(bs);
+        // return cipher.doFinal(bs);
+        return output.getBytes();
     }
 
     @Override
@@ -121,8 +153,36 @@ public abstract class BaseCipher implements ICipher {
         }
         // 获取加密机
         Cipher cipher = getCipher(Cipher.ENCRYPT_MODE);
+
+        int blockSize = cipher.getBlockSize();
+        int outputSize = cipher.getOutputSize(blockSize);
+        byte[] in = new byte[blockSize];
+        byte[] out = new byte[outputSize];
+        ByteArrayInputStream input = new ByteArrayInputStream(bs);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        int read = 0;
+        boolean more = true;
+        while (more) {
+            read = input.read(in);
+            if (read == blockSize) {
+                int update = cipher.update(in, 0, blockSize, out);
+                output.write(out, 0, update);
+                in = new byte[blockSize];
+                out = new byte[outputSize];
+            } else {
+                more = false;
+            }
+        }
+        if (read > 0) {
+            out = cipher.doFinal(in, 0, read);
+        } else {
+            out = cipher.doFinal();
+        }
+        output.write(out);
         // 加密
-        return cipher.doFinal(bs);
+        // return cipher.doFinal(bs);
+        return output.toByteArray();
     }
 
     // ------------------------ 保护方法 ------------------------
@@ -141,6 +201,7 @@ public abstract class BaseCipher implements ICipher {
         Key key = generateKey(password);
         // 获取加密算法
         Cipher cipher = Cipher.getInstance(algorithm);
+        // Cipher cipher = Cipher.getInstance(getEncrypt().toString());
         // ECB模式不支持IV（ECB模式是最基本的工作模式, DES=DES/ECB/PCKS5Padding）
         if (mode == null || Encrypt.Mode.ECB == mode) {
             cipher.init(cipherMode, key);

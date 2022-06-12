@@ -9,6 +9,8 @@ import com.x.doraemon.encrypt.des.DES;
 import com.x.doraemon.encrypt.des.DES3;
 import com.x.doraemon.encrypt.digest.Digests;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author AD
@@ -42,53 +44,44 @@ public class Test {
     }
 
     private static void testDES(byte[] msg, byte[] pwd) throws Exception {
-        String msgHex = Converts.bytesToHex(msg);
-        System.out.println(msgHex);
-
-        Printer printer = new Printer();
-        printer.add("mode", "algorithm", "encrypt", "decrypt");
+        List<ICipher> ciphers = new ArrayList<>();
         for (Encrypt.Mode mode : Encrypt.Mode.values()) {
-            ICipher des = new DES(pwd, mode);
-            byte[] encrypt = des.encrypt(msg);
-            byte[] decrypt = des.decrypt(encrypt);
-            String enHex = Converts.bytesToHex(encrypt);
-            String deHex = Converts.bytesToHex(decrypt);
-            printer.add(mode, des.algorithm(), enHex, deHex);
+            ICipher cipher = new DES(pwd, mode);
+            ciphers.add(cipher);
         }
-        printer.print();
+        testCipher(msg, ciphers);
     }
 
     private static void testDES3(byte[] msg, byte[] pwd) throws Exception {
-        String msgHex = Converts.bytesToHex(msg);
-        System.out.println(msgHex);
-
-        Printer printer = new Printer();
-        printer.add("mode", "algorithm", "encrypt", "decrypt");
+        List<ICipher> ciphers = new ArrayList<>();
         for (Encrypt.Mode mode : Encrypt.Mode.values()) {
-            ICipher des3 = new DES3(pwd, mode);
-            byte[] encrypt = des3.encrypt(msg);
-            byte[] decrypt = des3.decrypt(encrypt);
-            String enHex = Converts.bytesToHex(encrypt);
-            String deHex = Converts.bytesToHex(decrypt);
-            printer.add(mode, des3.algorithm(), enHex, deHex);
+            ICipher cipher = new DES3(pwd, mode);
+            ciphers.add(cipher);
         }
-        printer.print();
+        testCipher(msg, ciphers);
     }
 
     private static void testAES(byte[] msg, byte[] pwd) throws Exception {
-        String msgHex = Converts.bytesToHex(msg);
-        System.out.println(msgHex);
-
-        Printer printer = new Printer();
-        printer.add("mode", "algorithm", "encrypt", "decrypt");
+        List<ICipher> ciphers = new ArrayList<>();
         for (Encrypt.Mode mode : Encrypt.Mode.values()) {
-            ICipher des3 = new AES(pwd, mode);
-            byte[] encrypt = des3.encrypt(msg);
-            byte[] decrypt = des3.decrypt(encrypt);
+            ICipher cipher = new AES(pwd, mode);
+            ciphers.add(cipher);
+        }
+        testCipher(msg, ciphers);
+    }
+
+    private static void testCipher(byte[] msg, List<ICipher> ciphers) throws Exception {
+        Printer printer = new Printer();
+        printer.add("mode", "algorithm", "encrypt");
+        for (ICipher cipher : ciphers) {
+            byte[] encrypt = cipher.encrypt(msg);
+            // byte[] decrypt = cipher.decrypt(encrypt);
             String enHex = Converts.bytesToHex(encrypt);
-            String deHex = Converts.bytesToHex(decrypt);
-            printer.add(mode, des3.algorithm(), enHex, deHex);
+            // String deHex = Converts.bytesToHex(decrypt);
+            printer.add(cipher.mode(), cipher.algorithm(), enHex);
         }
         printer.print();
+
+
     }
 }

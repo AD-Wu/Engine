@@ -7,6 +7,12 @@ package com.x.doraemon.encrypt.core;
 public interface ICipher {
 
     /**
+     * 加密模式
+     * @return
+     */
+    String mode();
+
+    /**
      * 加密算法名
      * @return
      */
