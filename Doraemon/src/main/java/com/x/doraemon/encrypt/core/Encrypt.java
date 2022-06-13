@@ -6,12 +6,14 @@ package com.x.doraemon.encrypt.core;
  * @date 2022/6/11 19:53
  */
 public enum Encrypt {
-
-    DES,
-    TripleDES,
-    AES,
-    RSA;
-
+    ;
+    public static enum Algorithm {
+        DES,
+        TripleDES,
+        AES,
+        RSA;
+    }
+    
     public static enum Mode {
         /**
          * 基本的工作模式
@@ -36,7 +38,7 @@ public enum Encrypt {
          */
         CTR;
     }
-
+    
     public static enum Padding {
         NoPadding,
         ZeroPadding,

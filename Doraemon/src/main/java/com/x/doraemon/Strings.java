@@ -72,7 +72,7 @@ public class Strings extends StringUtils {
      * @param args
      * @return
      */
-    public static String replace(String str, Object... args) {
+    public static String format(String str, Object... args) {
         String replace = str.replace("{}", "%s");
         Formatter formatter = new Formatter();
         String s = formatter.format(replace, args).toString();
