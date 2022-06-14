@@ -129,33 +129,6 @@ public class RSA {
         return out.toByteArray();
     }
 
-    public static String rsaEncodeTest() throws Exception {
-        String msg = "admin|E10ADC3949BA59ABBE56E057F20F883E|1456145396000";
-        byte[] msgBytes = msg.getBytes("UTF-8");
-        String var2 = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJJfsLg+gyTR8HyylVVbwDk8zbCr8eDMP7mdg3QUePLcVYS4+qOfwkrgEAB+1bXXZ5oHz4emplPpqlTFuOneenMCAwEAAQ==";
-        Decoder decoder = Base64.getDecoder();
-        byte[] var4 = decoder.decode(var2.getBytes());
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(var4);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        RSAPublicKey publicKey = (RSAPublicKey)keyFactory.generatePublic(spec);
-        Cipher cipher = Cipher.getInstance("RSA");
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        int modulusBits = publicKey.getModulus().bitLength() / 8 - 11;
-        int outputSize = cipher.getOutputSize(msgBytes.length);
-        int mod = msgBytes.length % modulusBits;
-        int blockCount = mod != 0 ? msgBytes.length / modulusBits + 1 : msgBytes.length / modulusBits;
-        byte[] total = new byte[outputSize * blockCount];
-
-        for(int i = 0; msgBytes.length - i * modulusBits > 0; ++i) {
-            if (msgBytes.length - i * modulusBits > modulusBits) {
-                cipher.doFinal(msgBytes, i * modulusBits, modulusBits, total, i * outputSize);
-            } else {
-                cipher.doFinal(msgBytes, i * modulusBits, msgBytes.length - i * modulusBits, total, i * outputSize);
-            }
-        }
-        return Converts.bytesToHex(total);
-    }
-
     public static void main(String[] var0) throws Exception {
         try {
             Map<String,String> keys = generateKeys(512);
