@@ -10,7 +10,12 @@ import java.io.Serializable;
  * @author AD
  * @date 2022/1/13 12:32
  */
-public class Converts {
+public final class Converts {
+
+    /**
+     * 16进制字符串(大写)
+     */
+    public static final String HEX = "0123456789ABCDEF";
 
     private Converts() {}
 
@@ -48,6 +53,19 @@ public class Converts {
         return null;
     }
 
+    public static byte[] hexToBytes(String hex) {
+        if (Strings.isNull(hex)) {
+            return Arrayx.EMPTY_BYTE_ARRAY;
+        }
+        hex = hex.length() == 1 ? "0" + hex : hex;
+        char[] cs = hex.toUpperCase().toCharArray();
+        byte[] bs = new byte[cs.length / 2];
+        for (int b = 0, c = 0; b < bs.length; b++, c += 2) {
+            bs[b] = (byte) (HEX.indexOf(cs[c]) << 4 | HEX.indexOf(cs[c + 1]));
+        }
+        return bs;
+    }
+
     public static byte[] serializableToBytes(Serializable serializable) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(bos)) {
@@ -62,7 +80,7 @@ public class Converts {
      * @param str
      * @return
      */
-    public static String toCamel(String str){
+    public static String toCamel(String str) {
         String replace = str.replace("_", "-");
         return hyphenToCamel(replace);
     }
@@ -72,7 +90,7 @@ public class Converts {
      * @param str
      * @return
      */
-    public static String toLowerHyphen(String str){
+    public static String toLowerHyphen(String str) {
         String replace = str.replace("_", "-");
         return camelToLowerHyphen(replace);
     }
@@ -82,7 +100,7 @@ public class Converts {
      * @param str
      * @return
      */
-    public static String toLowerUnderscore(String str){
+    public static String toLowerUnderscore(String str) {
         String replace = str.replace("-", "_");
         return camelToLowerUnderscore(replace);
     }
@@ -91,7 +109,6 @@ public class Converts {
 
     /**
      * 驼峰 -> 小写下划线.如:testData|TestData -> test_data
-     *
      * @param str 需要转换的字符
      * @return
      */
@@ -101,7 +118,6 @@ public class Converts {
 
     /**
      * 驼峰 -> 小写连字符.如:testData|TestData -> test-data
-     *
      * @param str 需要转换的字符
      * @return
      */
@@ -111,7 +127,6 @@ public class Converts {
 
     /**
      * 连字符 -> 驼峰.如:test-data -> testData
-     *
      * @param str
      * @return
      */
@@ -121,7 +136,6 @@ public class Converts {
 
     /**
      * 下滑线 -> 驼峰.如:test_data -> testData
-     *
      * @param str
      * @return
      */
@@ -131,7 +145,6 @@ public class Converts {
 
     /**
      * 命名格式化,如:下划线、连字符命名 <-> 驼峰命名
-     *
      * @param src    源格式,即str的格式
      * @param str    需转换的字符串
      * @param target 目标格式

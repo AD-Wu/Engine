@@ -20,6 +20,11 @@ public final class Printer {
         this.rows = new ArrayList<>();
     }
 
+    public static void println(String pattern, Object... args) {
+        String format = Strings.format(pattern, args);
+        System.out.println(format);
+    }
+
     public synchronized void add(Object... os) {
         List<String> row = new ArrayList<>();
         for (int i = 0; i < os.length; i++) {
