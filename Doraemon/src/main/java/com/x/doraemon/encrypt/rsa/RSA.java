@@ -20,7 +20,13 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.crypto.Cipher;
 
+/**
+ * RSA也是一个块加密算法（ block cipher algorithm），总是在一个固定长度的块上进行操作。
+ * 但跟AES等不同的是，　block length是跟key length有关的。
+ * 每次RSA加密的明文的长度是受RSA填充模式限制的，但是RSA每次加密的块长度就是key length。
+ */
 public class RSA {
+
     private RSAPublicKey publicKey;
     private RSAPrivateKey privateKey;
 
@@ -34,30 +40,56 @@ public class RSA {
         return pair;
     }
 
+    /**
+     * 根据模数和指数还原公钥
+     * @param modulus  模数
+     * @param exponent 指数
+     * @return
+     * @throws Exception
+     */
     public static RSAPublicKey generateRSAPublicKey(byte[] modulus, byte[] exponent) throws Exception {
         KeyFactory fact = KeyFactory.getInstance("RSA");
         RSAPublicKeySpec spec = new RSAPublicKeySpec(new BigInteger(modulus), new BigInteger(exponent));
-        return (RSAPublicKey)fact.generatePublic(spec);
+        return (RSAPublicKey) fact.generatePublic(spec);
     }
 
+    /**
+     * 根据模数和指数还原私钥
+     * @param modulus  模数
+     * @param exponent 指数
+     * @return
+     * @throws Exception
+     */
     public static RSAPrivateKey generateRSAPrivateKey(byte[] modulus, byte[] exponent) throws Exception {
         KeyFactory fact = KeyFactory.getInstance("RSA");
         RSAPrivateKeySpec spec = new RSAPrivateKeySpec(new BigInteger(modulus), new BigInteger(exponent));
-        return (RSAPrivateKey)fact.generatePrivate(spec);
+        return (RSAPrivateKey) fact.generatePrivate(spec);
     }
 
-    public static Map<String,String> generateKeys(int bit) throws Exception {
+    /**
+     * 生成密钥(包括模数和指数,用于还原密钥)
+     * 由于RSA密钥是（公钥+模值）、（私钥+模值）分组分发的，单独给对方一个公钥或私钥是没有任何用处，
+     * 所以我们说的“密钥”其实是它们两者中的其中一组。
+     * 但我们说的“密钥长度”一般只是指模值的位长度。目前主流可选值：1024、2048、3072、4096...
+     * @param bit 密钥bit数,必须是8的倍数,最小512(1024,2048).512位已被破解
+     * @return
+     * @throws Exception
+     */
+    public static Map<String, String> generateKeys(int bit) throws Exception {
         KeyPair pair = generateKeyPair(bit);
-        RSAPublicKey publicKey = (RSAPublicKey)pair.getPublic();
-        RSAPrivateKey privateKey = (RSAPrivateKey)pair.getPrivate();
+        RSAPublicKey publicKey = (RSAPublicKey) pair.getPublic();
+        RSAPrivateKey privateKey = (RSAPrivateKey) pair.getPrivate();
+
         byte[] pubModulus = publicKey.getModulus().toByteArray();
         byte[] pubExponent = publicKey.getPublicExponent().toByteArray();
+
         byte[] priModulus = privateKey.getModulus().toByteArray();
         byte[] priExponent = privateKey.getPrivateExponent().toByteArray();
+
         RSAPublicKey pubKey = generateRSAPublicKey(pubModulus, pubExponent);
         RSAPrivateKey priKey = generateRSAPrivateKey(priModulus, priExponent);
-        Encoder encoder = Base64.getEncoder();
 
+        Encoder encoder = Base64.getEncoder();
         byte[] pubKeyEncoded = encoder.encode(pubKey.getEncoded());
         byte[] base64PubModulus = encoder.encode(pubModulus);
         byte[] base64PubExponent = encoder.encode(pubExponent);
@@ -65,7 +97,7 @@ public class RSA {
         byte[] priKeyEncoded = encoder.encode(priKey.getEncoded());
         byte[] base64PriModulus = encoder.encode(priModulus);
         byte[] base64PriExponent = encoder.encode(priExponent);
-        Map<String,String> keys = new HashMap<>();
+        Map<String, String> keys = new HashMap<>();
         keys.put("PublicKey", new String(pubKeyEncoded, StandardCharsets.US_ASCII));
         keys.put("PublicModules", new String(base64PubModulus, StandardCharsets.US_ASCII));
         keys.put("PublicExponent", new String(base64PubExponent, StandardCharsets.US_ASCII));
@@ -80,7 +112,7 @@ public class RSA {
         byte[] keyBytes = decoder.decode(publicKey.getBytes());
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory factory = KeyFactory.getInstance("RSA");
-        return (RSAPublicKey)factory.generatePublic(spec);
+        return (RSAPublicKey) factory.generatePublic(spec);
     }
 
     public static RSAPrivateKey decodePrivateKey(String privateKey) throws Exception {
@@ -88,7 +120,7 @@ public class RSA {
         byte[] keyBytes = decoder.decode(privateKey.getBytes());
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory factory = KeyFactory.getInstance("RSA");
-        return (RSAPrivateKey)factory.generatePrivate(spec);
+        return (RSAPrivateKey) factory.generatePrivate(spec);
     }
 
     public void setKey(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
@@ -105,14 +137,13 @@ public class RSA {
         int blockCount = mod != 0 ? msg.length / modulusBits + 1 : msg.length / modulusBits;
         byte[] total = new byte[outputSize * blockCount];
 
-        for(int i = 0; msg.length - i * modulusBits > 0; ++i) {
+        for (int i = 0; msg.length - i * modulusBits > 0; ++i) {
             if (msg.length - i * modulusBits > modulusBits) {
                 cipher.doFinal(msg, i * modulusBits, modulusBits, total, i * outputSize);
             } else {
                 cipher.doFinal(msg, i * modulusBits, msg.length - i * modulusBits, total, i * outputSize);
             }
         }
-
         return total;
     }
 
@@ -122,7 +153,7 @@ public class RSA {
         int modulusBits = this.privateKey.getModulus().bitLength() / 8;
         ByteArrayOutputStream out = new ByteArrayOutputStream(64);
 
-        for(int i = 0; encrypts.length - i * modulusBits > 0; ++i) {
+        for (int i = 0; encrypts.length - i * modulusBits > 0; ++i) {
             out.write(cipher.doFinal(encrypts, i * modulusBits, modulusBits));
         }
 
@@ -131,7 +162,7 @@ public class RSA {
 
     public static void main(String[] var0) throws Exception {
         try {
-            Map<String,String> keys = generateKeys(512);
+            Map<String, String> keys = generateKeys(1024);
             System.out.println("-------------- 公钥 --------------");
             String publicKey = keys.get("PublicKey");
             System.out.println("PublicKey:\r\n" + publicKey);

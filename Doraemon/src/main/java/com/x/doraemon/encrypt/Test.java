@@ -31,9 +31,10 @@ public class Test {
     private static void rsaDemo() {
         int a = 3;
         int b = 11;
-        int c = a * b;
+        // 模数
+        int modulus = a * b;
         int n = (a - 1) * (b - 1);
-        Printer.println("a={}, b={}, a*b=c={}, n={} [(a-1)*(b-1)={}*{}]", a, b, c, n, a - 1, b - 1);
+        Printer.println("a={}, b={}, modulus=a*b={}, n={} [(a-1)*(b-1)={}*{}]", a, b, modulus, n, a - 1, b - 1);
         int publicKey = 3;
         if (n % publicKey == 0 || publicKey < 1) {
             Printer.println("publicKey不对");
@@ -54,7 +55,7 @@ public class Test {
         for (int i = 0; i < plains.length; i++) {
             long plain = plains[i];
             double pow = Math.pow(plain, publicKey);
-            long encrypt = Math.floorMod((long) pow, c);
+            long encrypt = Math.floorMod((long) pow, modulus);
             encrypts[i] = encrypt;
         }
 
@@ -62,7 +63,7 @@ public class Test {
         for (int i = 0; i < encrypts.length; i++) {
             long encrypt = encrypts[i];
             double pow = Math.pow(encrypt, privateKey);
-            long decrypt = Math.floorMod((long) pow, c);
+            long decrypt = Math.floorMod((long) pow, modulus);
             decrypts[i] = decrypt;
         }
         Printer.println("明文:{}", Arrays.toString(plains));
