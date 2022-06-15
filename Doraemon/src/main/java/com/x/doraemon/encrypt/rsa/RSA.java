@@ -41,7 +41,7 @@ public class RSA {
     }
 
     /**
-     * 根据模数和指数还原公钥
+     * 根据模数和指数生成公钥[密钥(模数,指数)]
      * @param modulus  模数
      * @param exponent 指数
      * @return
