@@ -46,6 +46,7 @@
         <module>JDK8</module>
         <module>Redis</module>
         <module>Plugin</module>
+        <module>Bridge</module>
     </modules>
 
     <!--
