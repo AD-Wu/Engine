@@ -72,6 +72,50 @@ public class BalanceExecutor<T> implements IBalanceExecutor<T> {
         this.shutdown = false;
     }
 
+
+    @Override
+    public void execute(T key, Runnable command) {
+        if (key == null) {
+            execute(command);
+            return;
+        }
+        ThreadPoolExecutor executor = keyPools.get(key);
+        if (executor == null) {
+            synchronized (this) {
+                if (executor == null) {
+                    executor = getNextExecutor();
+                    keyPools.put(key, executor);
+                }
+            }
+        }
+        executor.execute(command);
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        ThreadPoolExecutor executor = getNextExecutor();
+        executor.execute(command);
+    }
+
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        ThreadPoolExecutor executor = getNextExecutor();
+        return executor.submit(task);
+    }
+
+    @Override
+    public <T> Future<T> submit(Runnable task, T result) {
+        ThreadPoolExecutor executor = getNextExecutor();
+        return executor.submit(task, result);
+    }
+
+    @Override
+    public Future<?> submit(Runnable task) {
+        ThreadPoolExecutor executor = getNextExecutor();
+        return executor.submit(task);
+    }
+
+
     @Override
     public synchronized void shutdown() {
         this.awaitTermination = true;
@@ -119,48 +163,6 @@ public class BalanceExecutor<T> implements IBalanceExecutor<T> {
         return awaitTermination;
     }
 
-    @Override
-    public <T> Future<T> submit(Callable<T> task) {
-        ThreadPoolExecutor executor = getNextExecutor();
-        return executor.submit(task);
-    }
-
-    @Override
-    public <T> Future<T> submit(Runnable task, T result) {
-        ThreadPoolExecutor executor = getNextExecutor();
-        return executor.submit(task, result);
-    }
-
-    @Override
-    public Future<?> submit(Runnable task) {
-        ThreadPoolExecutor executor = getNextExecutor();
-        return executor.submit(task);
-    }
-
-
-    @Override
-    public void execute(Runnable command) {
-        ThreadPoolExecutor executor = getNextExecutor();
-        executor.execute(command);
-    }
-
-    @Override
-    public void execute(T key, Runnable command) {
-        if (key == null) {
-            execute(command);
-            return;
-        }
-        ThreadPoolExecutor executor = keyPools.get(key);
-        if (executor == null) {
-            synchronized (this) {
-                if (executor == null) {
-                    executor = getNextExecutor();
-                    keyPools.put(key, executor);
-                }
-            }
-        }
-        executor.execute(command);
-    }
 
     @Override
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
