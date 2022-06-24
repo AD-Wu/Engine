@@ -3,7 +3,9 @@ package com.x.bridge.proxy.factory;
 import com.x.bridge.netty.factory.NettyServer;
 import com.x.bridge.netty.interfaces.INetty;
 import com.x.bridge.netty.interfaces.INettyListener;
+import com.x.bridge.proxy.core.Command;
 import com.x.bridge.proxy.core.ProxyConfig;
+import com.x.bridge.proxy.core.ProxyContext;
 import com.x.bridge.proxy.core.Replier;
 import com.x.bridge.proxy.interfaces.IProxy;
 import com.x.bridge.util.ChannelHelper;
@@ -13,6 +15,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.log4j.Log4j2;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +32,8 @@ public class ProxyServer implements IProxy {
     
     private final ProxyConfig conf;
     
+    private final ProxyContext ctx;
+    
     private final Map<String, Replier> repliers;
     
     private final INetty server;
@@ -36,6 +42,8 @@ public class ProxyServer implements IProxy {
     
     public ProxyServer(ProxyConfig conf) {
         this.conf = conf;
+        this.ctx = new ProxyContext();
+        initProxyContext();
         this.repliers = new HashMap<>();
         this.server = new NettyServer(conf.getName(), conf.getProxyPort(), new ServerListener());
     }
@@ -75,35 +83,35 @@ public class ProxyServer implements IProxy {
     private class ServerListener implements INettyListener {
         
         @Override
-        public void active(ChannelHandlerContext ctx) throws Exception {
-            ChnInfo chn = ChannelHelper.getChannelInfo(ctx);
-            if (isAccept(chn.getRemoteHost())) {
-                Replier replier = new Replier(ctx);
-                replier.setRemote(chn.getRemote());
-                replier.setLocal(chn.getLocal());
-                addReplier(replier);
+        public void active(ChannelHandlerContext chn) throws Exception {
+            ChnInfo ci = ChannelHelper.getChannelInfo(chn);
+            if (isAccept(ci.getRemoteHost())) {
+                Replier replier = new Replier(chn, ctx);
+                addReplier(ci.getRemote(), replier);
+                replier.send(replier.buildMessage(Command.OPEN.toString(), null));
             } else {
-                log.warn("代理:【{}】非法客户端连接:【{}】", name(), chn.getRemote());
+                log.warn("代理:【{}】非法客户端连接:【{}】", name(), ci.getRemote());
             }
         }
         
         @Override
         public void inActive(ChannelHandlerContext ctx) throws Exception {
-            ChnInfo chn = ChannelHelper.getChannelInfo(ctx);
-            Replier replier = removeReplier(chn.getRemoteHost());
+            ChnInfo ci = ChannelHelper.getChannelInfo(ctx);
+            Replier replier = removeReplier(ci.getRemoteHost());
             if (replier != null) {
                 replier.close();
-                log.info("代理:【{}】连接关闭:【{}】", name(), replier.getRemote());
+                replier.send(replier.buildMessage(Command.CLOSE.toString(), null));
+                log.info("代理:【{}】连接关闭:【{}】", name(), ci.getRemote());
             }
         }
         
         @Override
-        public void receive(ChannelHandlerContext ctx, ByteBuf buf) throws Exception {
-            ChnInfo chn = ChannelHelper.getChannelInfo(ctx);
-            Replier replier = getReplier(chn.getRemote());
-            if (replier != null) {
+        public void receive(ChannelHandlerContext chn, ByteBuf buf) throws Exception {
+            ChnInfo ci = ChannelHelper.getChannelInfo(chn);
+            Replier replier = getReplier(ci.getRemote());
+            if (replier != null && replier.isOpen()) {
                 byte[] data = ChannelHelper.readData(buf);
-                replier.toProxy(data);
+                replier.send(replier.buildMessage(Command.DATA.toString(), data));
             }
         }
         
@@ -121,8 +129,7 @@ public class ProxyServer implements IProxy {
     
     // ------------------------ 私有方法 ------------------------
     
-    private synchronized void addReplier(Replier replier) {
-        String client = replier.getRemote();
+    private synchronized void addReplier(String client, Replier replier) {
         if (!repliers.containsKey(client)) {
             repliers.put(client, replier);
             log.info("代理:【{}】建立连接:【{}】", name(), client);
@@ -137,6 +144,17 @@ public class ProxyServer implements IProxy {
     
     private synchronized Replier removeReplier(String appClient) {
         return repliers.remove(appClient);
+    }
+    
+    private void initProxyContext() {
+        ctx.setAppHost(conf.getAppHost());
+        ctx.setAppPort(conf.getAppPort());
+        try {
+            ctx.setProxyServer(InetAddress.getLocalHost().getHostAddress() + ":" + conf.getProxyPort());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        
     }
     
 }

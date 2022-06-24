@@ -10,53 +10,63 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author AD
  * @date 2022/6/21 15:47
  */
-public class Replier {
+public final class Replier {
     
-    private String remote;
+    private final ChannelHandlerContext ctx;
     
-    private String local;
+    private final ProxyContext proxy;
     
-    private volatile ChannelHandlerContext ctx;
+    private final Queue<Message> proxyMessages;
     
-    private final Queue<byte[]> proxyDatas;
+    private final Queue<Message> appMessages;
     
-    private final Queue<byte[]> targetDatas;
+    private long sendSeq;
     
-    public Replier(ChannelHandlerContext ctx) {
+    private long recvSeq;
+    
+    public Replier(ChannelHandlerContext ctx, ProxyContext proxy) {
         this.ctx = ctx;
-        this.proxyDatas = new LinkedBlockingQueue<>();
-        this.targetDatas = new LinkedBlockingQueue<>();
+        this.proxy = proxy;
+        this.proxyMessages = new LinkedBlockingQueue<>();
+        this.appMessages = new LinkedBlockingQueue<>();
     }
     
-    public void toProxy(byte[] data) {
-        proxyDatas.offer(data);
+    public void send(Message msg) {
     }
     
-    public void toTarget(byte[] data){
-        targetDatas.offer(data);
+    public void receive(Message msg) {
+        String cmd = msg.getCmd();
+        
     }
     
     public void close() {
         if (ctx != null) {
             ctx.close();
-            ctx = null;
         }
     }
     
-    public String getRemote() {
-        return remote;
+    public boolean isOpen() {
+        if (ctx != null) {
+            return ctx.channel().isOpen();
+        }
+        return false;
     }
     
-    public void setRemote(String remote) {
-        this.remote = remote;
+    public Message buildMessage(String cmd, byte[] data) {
+        Message msg = new Message(nextRecvSeq(), data, cmd);
+        msg.setAppClient(proxy.getAppClient());
+        msg.setAppHost(proxy.getAppHost());
+        msg.setAppPort(proxy.getAppPort());
+        msg.setProxyServer(proxy.getProxyServer());
+        return msg;
     }
     
-    public String getLocal() {
-        return local;
+    private synchronized long nextSendSeq() {
+        return sendSeq++;
     }
     
-    public void setLocal(String local) {
-        this.local = local;
+    private synchronized long nextRecvSeq() {
+        return recvSeq++;
     }
     
 }

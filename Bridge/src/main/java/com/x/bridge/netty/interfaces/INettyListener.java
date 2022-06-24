@@ -11,14 +11,14 @@ import io.netty.handler.timeout.IdleStateEvent;
  */
 public interface INettyListener {
     
-    void active(ChannelHandlerContext ctx) throws Exception;
+    void active(ChannelHandlerContext chn) throws Exception;
     
-    void inActive(ChannelHandlerContext ctx) throws Exception;
+    void inActive(ChannelHandlerContext chn) throws Exception;
     
-    void receive(ChannelHandlerContext ctx, ByteBuf buf) throws Exception;
+    void receive(ChannelHandlerContext chn, ByteBuf buf) throws Exception;
     
-    void timeout(ChannelHandlerContext ctx, IdleStateEvent event) throws Exception;
+    void timeout(ChannelHandlerContext chn, IdleStateEvent event) throws Exception;
     
-    void error(ChannelHandlerContext ctx, Throwable cause) throws Exception;
+    void error(ChannelHandlerContext chn, Throwable cause) throws Exception;
     
 }

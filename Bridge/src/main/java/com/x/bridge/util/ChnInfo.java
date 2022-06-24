@@ -12,11 +12,14 @@ import lombok.Setter;
 @Setter
 public class ChnInfo {
     
+    // ---------------------- 远端信息 ----------------------
     private String remote;
     
     private String remoteHost;
     
     private int remotePort;
+    
+    // ---------------------- 本地信息 ----------------------
     
     private String local;
     
@@ -24,6 +27,9 @@ public class ChnInfo {
     
     private int localPort;
     
+    // ---------------------- App Server信息 ----------------------
+    private String appServerHost;
     
+    private int appServerPort;
     
 }

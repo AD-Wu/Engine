@@ -56,15 +56,16 @@ public abstract class Netty implements INetty {
     
     @Override
     public final synchronized void stop() {
-        if (channel != null) {
-            channel.close();
+        if (running) {
+            if (channel != null) {
+                channel.close();
+            }
+            if (worker != null) {
+                worker.shutdownGracefully();
+            }
+            shutdown();
+            running = false;
         }
-        if (worker != null) {
-            worker.shutdownGracefully();
-        }
-        shutdown();
-        running = false;
-        
     }
     
     protected abstract void run() throws Exception;
