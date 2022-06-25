@@ -58,6 +58,11 @@ public class ProxyClient implements IProxy {
         client.stop();
     }
     
+    @Override
+    public Replier getReplier(String appClient) {
+        return this.replier;
+    }
+    
     /**
      * 代理客户端监听器
      */
@@ -66,15 +71,14 @@ public class ProxyClient implements IProxy {
         @Override
         public void active(ChannelHandlerContext chn) throws Exception {
             log.info("连接建立:{}", ctx.getAppClient());
-            ProxyManager.putProxyClient(proxyServer, ctx.getAppClient(), ProxyClient.this);
-            replier = new Replier(chn, ctx);
+            ProxyManager.putReplier(proxyServer, ctx.getAppClient(), ProxyClient.this);
+            ProxyClient.this.replier = new Replier(chn, ctx);
             replier.send(replier.buildMessage(Command.OPEN_SUCCESS.toString(), null));
-            
         }
         
         @Override
         public void inActive(ChannelHandlerContext chn) throws Exception {
-            ProxyManager.closeProxyClient(proxyServer, ctx.getAppClient());
+            ProxyManager.closeReplier(proxyServer, ctx.getAppClient());
             if (replier != null) {
                 replier.close();
                 replier.send(replier.buildMessage(Command.CLOSE.toString(), null));

@@ -3,6 +3,7 @@ package com.x.bridge.proxy.factory;
 import com.x.bridge.netty.factory.NettyServer;
 import com.x.bridge.netty.interfaces.INetty;
 import com.x.bridge.netty.interfaces.INettyListener;
+import com.x.bridge.proxy.ProxyManager;
 import com.x.bridge.proxy.core.Command;
 import com.x.bridge.proxy.core.ProxyConfig;
 import com.x.bridge.proxy.core.ProxyContext;
@@ -75,6 +76,11 @@ public class ProxyServer implements IProxy {
         return conf.getAllowClients().contains(host);
     }
     
+    @Override
+    public synchronized Replier getReplier(String appClient) {
+        return repliers.get(appClient);
+    }
+    
     // ------------------------ 内部类 ------------------------
     
     /**
@@ -88,6 +94,7 @@ public class ProxyServer implements IProxy {
             if (isAccept(ci.getRemoteHost())) {
                 Replier replier = new Replier(chn, ctx);
                 addReplier(ci.getRemote(), replier);
+                ProxyManager.putReplier(ctx.getProxyServer(), ctx.getAppClient(), replier);
                 replier.send(replier.buildMessage(Command.OPEN.toString(), null));
             } else {
                 log.warn("代理:【{}】非法客户端连接:【{}】", name(), ci.getRemote());
@@ -138,9 +145,7 @@ public class ProxyServer implements IProxy {
         }
     }
     
-    private synchronized Replier getReplier(String appClient) {
-        return repliers.get(appClient);
-    }
+    
     
     private synchronized Replier removeReplier(String appClient) {
         return repliers.remove(appClient);

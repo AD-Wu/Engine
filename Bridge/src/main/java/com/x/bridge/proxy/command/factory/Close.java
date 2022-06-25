@@ -13,7 +13,7 @@ public class Close implements ICommand {
     
     @Override
     public void execute(Message msg) {
-        ProxyManager.closeProxyClient(msg.getProxyServer(), msg.getAppClient());
+        ProxyManager.closeReplier(msg.getProxyServer(), msg.getAppClient());
     }
     
 }
