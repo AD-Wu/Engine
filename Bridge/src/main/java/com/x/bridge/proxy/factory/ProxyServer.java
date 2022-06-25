@@ -4,7 +4,7 @@ import com.x.bridge.bean.Message;
 import com.x.bridge.netty.factory.NettyServer;
 import com.x.bridge.netty.interfaces.INetty;
 import com.x.bridge.netty.interfaces.INettyListener;
-import com.x.bridge.proxy.enums.Command;
+import com.x.bridge.enums.Command;
 import com.x.bridge.proxy.conf.ProxyConfig;
 import com.x.bridge.proxy.core.ProxyContext;
 import com.x.bridge.proxy.core.Replier;

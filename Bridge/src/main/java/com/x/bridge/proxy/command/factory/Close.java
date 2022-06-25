@@ -1,8 +1,7 @@
 package com.x.bridge.proxy.command.factory;
 
-import com.x.bridge.proxy.ProxyManager;
-import com.x.bridge.proxy.command.interfaces.ICommand;
 import com.x.bridge.bean.Message;
+import com.x.bridge.proxy.command.interfaces.ICommand;
 import com.x.bridge.proxy.core.Replier;
 
 /**
@@ -14,7 +13,7 @@ public class Close implements ICommand {
 
     @Override
     public void execute(Message msg, Replier replier) {
-        ProxyManager.closeReplier(msg.getProxyServer(), msg.getAppClient());
+        replier.close();
     }
 
 }

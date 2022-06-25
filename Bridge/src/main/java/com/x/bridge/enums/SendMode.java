@@ -1,4 +1,4 @@
-package com.x.bridge.transport.enums;
+package com.x.bridge.enums;
 
 /**
  * @author AD

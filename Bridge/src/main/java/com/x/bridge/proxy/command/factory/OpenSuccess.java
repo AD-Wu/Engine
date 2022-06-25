@@ -13,7 +13,7 @@ public class OpenSuccess implements ICommand {
 
     @Override
     public void execute(Message msg, Replier replier) {
-
+        replier.setOpenConnect(true);
     }
 
 }

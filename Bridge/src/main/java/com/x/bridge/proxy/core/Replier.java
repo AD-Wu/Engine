@@ -23,6 +23,8 @@ public final class Replier {
 
     private final String appClient;
 
+    private volatile boolean openConnect;
+
     private final Queue<Message> sends;
 
     private final Map<Long, Message> receives;
@@ -35,6 +37,7 @@ public final class Replier {
         this.ctx = ctx;
         this.proxy = proxy;
         this.appClient = appClient;
+        this.openConnect = false;
         this.sends = new LinkedBlockingQueue<>();
         this.receives = new ConcurrentHashMap<>();
     }
@@ -68,6 +71,10 @@ public final class Replier {
                 }
             }
         }
+    }
+
+    public void setOpenConnect(boolean openConnect) {
+        this.openConnect = openConnect;
     }
 
     public void close() {

@@ -1,4 +1,4 @@
-package com.x.bridge.proxy.enums;
+package com.x.bridge.enums;
 
 /**
  * 代理状态
