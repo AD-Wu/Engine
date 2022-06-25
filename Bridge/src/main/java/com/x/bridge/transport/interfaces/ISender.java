@@ -1,7 +1,5 @@
 package com.x.bridge.transport.interfaces;
 
-import com.x.bridge.proxy.conf.ProxyConfig;
-
 /**
  * 传输对象
  * @author AD
@@ -11,5 +9,4 @@ public interface ISender<T> {
 
     void send(T... ts);
 
-    void start(ProxyConfig conf);
 }

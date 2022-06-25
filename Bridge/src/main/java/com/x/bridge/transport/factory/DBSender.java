@@ -1,7 +1,6 @@
 package com.x.bridge.transport.factory;
 
 import com.x.bridge.bean.Message;
-import com.x.bridge.proxy.conf.ProxyConfig;
 import com.x.bridge.transport.interfaces.ISender;
 import com.x.bridge.transport.service.interfaces.IMessageService;
 import java.util.Arrays;
@@ -26,8 +25,4 @@ public class DBSender implements ISender<Message> {
         }
     }
 
-    @Override
-    public void start(ProxyConfig conf) {
-
-    }
 }
