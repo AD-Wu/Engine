@@ -4,8 +4,7 @@ import com.x.bridge.netty.core.NettyConfig;
 import com.x.bridge.netty.factory.NettyClient;
 import com.x.bridge.netty.interfaces.INetty;
 import com.x.bridge.netty.interfaces.INettyListener;
-import com.x.bridge.proxy.ProxyManager;
-import com.x.bridge.proxy.core.Command;
+import com.x.bridge.proxy.enums.Command;
 import com.x.bridge.proxy.core.ProxyContext;
 import com.x.bridge.proxy.core.Replier;
 import com.x.bridge.proxy.interfaces.IProxy;
@@ -22,70 +21,66 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class ProxyClient implements IProxy {
-    
+
     private final ProxyContext ctx;
-    
+
+    private final String appClient;
+
     private final String proxyServer;
-    
+
     private final INetty client;
-    
+
     private Replier replier;
-    
-    public ProxyClient(ProxyContext ctx) {
+
+    public ProxyClient(ProxyContext ctx, String appClient) {
         this.ctx = ctx;
+        this.appClient = appClient;
         this.proxyServer = ctx.getProxyServer();
         NettyConfig conf = NettyConfig.getClientConfig(ctx.getAppHost(), ctx.getAppPort());
         this.client = new NettyClient(name(), conf, new ClientListener());
     }
-    
+
     @Override
     public String name() {
-        return ctx.getAppClient();
+        return appClient;
     }
-    
+
     @Override
     public boolean isServerMode() {
         return false;
     }
-    
+
     @Override
     public boolean start() {
         return client.start();
     }
-    
+
     @Override
     public void stop() {
         client.stop();
     }
-    
-    @Override
-    public Replier getReplier(String appClient) {
-        return this.replier;
-    }
-    
+
     /**
      * 代理客户端监听器
      */
     private class ClientListener implements INettyListener {
-        
+
         @Override
         public void active(ChannelHandlerContext chn) throws Exception {
-            log.info("连接建立:{}", ctx.getAppClient());
-            ProxyManager.putReplier(proxyServer, ctx.getAppClient(), ProxyClient.this);
-            ProxyClient.this.replier = new Replier(chn, ctx);
+            log.info("连接建立:{}", appClient);
+            ProxyClient.this.replier = new Replier(chn, ctx, appClient);
             replier.send(replier.buildMessage(Command.OPEN_SUCCESS.toString(), null));
         }
-        
+
         @Override
         public void inActive(ChannelHandlerContext chn) throws Exception {
-            ProxyManager.closeReplier(proxyServer, ctx.getAppClient());
             if (replier != null) {
                 replier.close();
                 replier.send(replier.buildMessage(Command.CLOSE.toString(), null));
-                log.info("连接关闭:【{}】", ctx.getAppClient());
+                log.info("连接关闭:【{}】", appClient);
             }
         }
-        
+
         @Override
         public void receive(ChannelHandlerContext chn, ByteBuf buf) throws Exception {
             if (replier != null) {
@@ -93,25 +88,25 @@ public class ProxyClient implements IProxy {
                 replier.send(replier.buildMessage(Command.DATA.toString(), data));
             }
         }
-        
+
         @Override
         public void timeout(ChannelHandlerContext chn, IdleStateEvent event) throws Exception {
             if (replier != null) {
                 replier.close();
             }
             replier.send(replier.buildMessage(Command.TIMEOUT.toString(), null));
-            log.info("连接超时:【{}】", ctx.getAppClient());
+            log.info("连接超时:【{}】", appClient);
         }
-        
+
         @Override
         public void error(ChannelHandlerContext chn, Throwable cause) throws Exception {
             if (replier != null) {
                 replier.close();
             }
             replier.send(replier.buildMessage(Command.OPEN_FAIL.toString(), null));
-            log.info("连接错误:【{}】", ctx.getAppClient());
+            log.info("连接错误:【{}】", appClient);
         }
-        
+
     }
-    
+
 }

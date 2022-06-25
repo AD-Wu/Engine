@@ -11,9 +11,9 @@ import java.util.Map;
  * @date 2022/6/25 00:20
  */
 public final class ProxyManager {
-    
+
     private static final Map<String, Map<String, Replier>> proxies = new HashMap<>();
-    
+
     public static void closeReplier(String proxyServer, String appClient) {
         Map<String, Replier> clients = proxies.get(proxyServer);
         if (clients != null) {
@@ -23,10 +23,9 @@ public final class ProxyManager {
                     replier.close();
                 }
             }
-            
         }
     }
-    
+
     public static void putReplier(String proxyServer, String appClient, Replier replier) {
         if (proxies.containsKey(proxyServer)) {
             Map<String, Replier> clients = proxies.get(proxyServer);
@@ -45,5 +44,5 @@ public final class ProxyManager {
             }
         }
     }
-    
+
 }
