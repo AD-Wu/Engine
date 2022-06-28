@@ -1,5 +1,7 @@
 package com.x.doraemon;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,8 +17,9 @@ import javax.swing.filechooser.FileSystemView;
 public class Systemx {
 
 
-    public static void main(String[] args) {
-        print();
+    public static void main(String[] args)  {
+        int pid = getPid();
+        System.out.println(pid);
     }
 
     private static void print() {
@@ -26,6 +29,22 @@ public class Systemx {
         properties.entrySet().forEach(p -> {
             System.out.println(p.getKey() + "=" + p.getValue());
         });
+    }
+
+    /**
+     * 获取当前进程pid
+     * @return 进程pid(-1表示获取失败)
+     */
+    public static int getPid() {
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        // 12644@PCName
+        String name = runtime.getName();
+        int end = name.indexOf("@");
+        int pid = -1;
+        if (end != -1) {
+            pid = Integer.parseInt(name.substring(0, end));
+        }
+        return pid;
     }
 
     /**
