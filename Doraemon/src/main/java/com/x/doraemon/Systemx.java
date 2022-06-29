@@ -60,7 +60,7 @@ public class Systemx {
      * 获取系统临时文件夹
      * @return
      */
-    public static Path getTempFolder() {
+    public static Path getTempDir() {
         return Paths.get(System.getProperty("java.io.tmpdir"));
     }
 
