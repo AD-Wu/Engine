@@ -17,7 +17,7 @@ import javax.swing.filechooser.FileSystemView;
 public class Systemx {
 
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) throws Exception {
         int pid = getPid();
         System.out.println(pid);
     }
@@ -33,18 +33,14 @@ public class Systemx {
 
     /**
      * 获取当前进程pid
-     * @return 进程pid(-1表示获取失败)
+     * @return 进程pid(- 1表示获取失败)
      */
     public static int getPid() {
         RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
         // 12644@PCName
         String name = runtime.getName();
         int end = name.indexOf("@");
-        int pid = -1;
-        if (end != -1) {
-            pid = Integer.parseInt(name.substring(0, end));
-        }
-        return pid;
+        return Integer.parseInt(name.substring(0, end));
     }
 
     /**
@@ -70,8 +66,9 @@ public class Systemx {
 
     /**
      * 获取系统Home路径,等同于:System.getProperty("user.home").
-     * window:获取桌面路径
-     * @return
+     * <br/>
+     * window: 获取桌面路径
+     * @return 用户Home路径
      */
     public static Path getUserHome() {
         // System.getProperty("user.home")
