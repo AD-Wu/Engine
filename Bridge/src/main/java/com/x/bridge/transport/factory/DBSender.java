@@ -2,7 +2,7 @@ package com.x.bridge.transport.factory;
 
 import com.x.bridge.bean.Message;
 import com.x.bridge.transport.interfaces.ISender;
-import com.x.bridge.transport.service.interfaces.IMessageService;
+import com.x.bridge.transport.mode.db.interfaces.IMessageService;
 import java.util.Arrays;
 
 /**
@@ -12,16 +12,16 @@ import java.util.Arrays;
  */
 public class DBSender implements ISender<Message> {
 
-    private IMessageService msgService;
+    private IMessageService sender;
 
-    public DBSender(IMessageService msgService) {
-        this.msgService = msgService;
+    public DBSender(IMessageService sender) {
+        this.sender = sender;
     }
 
     @Override
     public void send(Message... msgs) {
         if (msgs != null || msgs.length > 0) {
-            msgService.saveBatch(Arrays.asList(msgs));
+            sender.saveBatch(Arrays.asList(msgs));
         }
     }
 
