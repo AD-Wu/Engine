@@ -2,6 +2,8 @@ package com.x.doraemon;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Formatter;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -91,6 +93,20 @@ public class Strings extends StringUtils {
         }
         split = split == null ? "" : split;
         return Stream.of(os).map(o -> String.valueOf(o)).collect(Collectors.joining(split));
+    }
+    
+    /**
+     * 获取堆栈异常信息
+     * @param e 可抛出的异常
+     * @return
+     */
+    public static String getExceptionTrace(Throwable e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        sw.flush();
+        return sw.toString();
+        
     }
     
 }

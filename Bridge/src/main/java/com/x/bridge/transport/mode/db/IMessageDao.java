@@ -1,4 +1,4 @@
-package com.x.bridge.transport.service.dao;
+package com.x.bridge.transport.mode.db;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.x.bridge.bean.Message;

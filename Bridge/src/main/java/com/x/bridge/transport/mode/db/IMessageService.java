@@ -1,4 +1,4 @@
-package com.x.bridge.transport.service.interfaces;
+package com.x.bridge.transport.mode.db;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.x.bridge.bean.Message;

@@ -1,10 +1,12 @@
 package com.x.bridge.proxy.factory;
 
+import com.x.bridge.bean.Message;
+import com.x.bridge.enums.Command;
+import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.netty.core.NettyConfig;
 import com.x.bridge.netty.factory.NettyClient;
 import com.x.bridge.netty.interfaces.INetty;
 import com.x.bridge.netty.interfaces.INettyListener;
-import com.x.bridge.enums.Command;
 import com.x.bridge.proxy.core.ProxyContext;
 import com.x.bridge.proxy.core.Replier;
 import com.x.bridge.proxy.interfaces.IProxy;
@@ -59,7 +61,22 @@ public class ProxyClient implements IProxy {
     public void stop() {
         client.stop();
     }
-
+    
+    @Override
+    public ProxyStatus status() {
+        return null;
+    }
+    
+    @Override
+    public void receive(Message... messages) {
+    
+    }
+    
+    @Override
+    public void send(Message... messages) {
+    
+    }
+    
     /**
      * 代理客户端监听器
      */

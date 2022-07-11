@@ -1,4 +1,4 @@
-package com.x.bridge.transport.interfaces;
+package com.x.bridge.proxy.interfaces;
 
 /**
  * @author AD

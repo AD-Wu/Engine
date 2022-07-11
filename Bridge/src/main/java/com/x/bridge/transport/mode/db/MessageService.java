@@ -1,9 +1,7 @@
-package com.x.bridge.transport.service.factory;
+package com.x.bridge.transport.mode.db;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.x.bridge.bean.Message;
-import com.x.bridge.transport.service.dao.IMessageDao;
-import com.x.bridge.transport.service.interfaces.IMessageService;
 import org.springframework.stereotype.Service;
 
 /**

@@ -3,12 +3,24 @@ package com.x.bridge.proxy.factory;
 import com.x.bridge.bean.Message;
 import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.proxy.interfaces.IProxy;
+import com.x.bridge.transport.interfaces.ITransportEngine;
 
 /**
  * @author AD
  * @date 2022/7/11 19:49
  */
 public class Proxy implements IProxy {
+    
+    /**
+     * 传输引擎
+     */
+    private final ITransportEngine<Message> te;
+    
+   
+    
+    public Proxy(ITransportEngine<Message> te){
+        this.te = te;
+    }
 
     @Override
     public ProxyStatus status() {
@@ -26,12 +38,17 @@ public class Proxy implements IProxy {
     }
 
     @Override
-    public boolean start() {
+    public synchronized boolean start() {
+        if(te.start()){
+        
+        }else{
+        
+        }
         return false;
     }
 
     @Override
-    public void stop() {
+    public synchronized void stop() {
 
     }
 

@@ -2,7 +2,7 @@ package com.x.bridge.transport;
 
 import com.x.bridge.transport.factory.DBSender;
 import com.x.bridge.transport.interfaces.ISender;
-import com.x.bridge.transport.service.factory.MessageService;
+import com.x.bridge.transport.mode.db.MessageService;
 
 /**
  * 传输管理者

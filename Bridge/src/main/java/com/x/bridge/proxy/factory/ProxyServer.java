@@ -1,27 +1,28 @@
 package com.x.bridge.proxy.factory;
 
 import com.x.bridge.bean.Message;
+import com.x.bridge.enums.Command;
+import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.netty.factory.NettyServer;
 import com.x.bridge.netty.interfaces.INetty;
 import com.x.bridge.netty.interfaces.INettyListener;
-import com.x.bridge.enums.Command;
 import com.x.bridge.proxy.conf.ProxyConfig;
 import com.x.bridge.proxy.core.ProxyContext;
 import com.x.bridge.proxy.core.Replier;
 import com.x.bridge.proxy.interfaces.IProxy;
 import com.x.bridge.transport.SenderManager;
-import com.x.bridge.transport.interfaces.IReceiver;
 import com.x.bridge.transport.interfaces.ISender;
 import com.x.bridge.util.ChannelHelper;
 import com.x.bridge.util.ChnInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
+import lombok.extern.log4j.Log4j2;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * 代理服务器
@@ -29,7 +30,7 @@ import lombok.extern.log4j.Log4j2;
  * @date 2022/6/21 14:48
  */
 @Log4j2
-public class ProxyServer implements IProxy, IReceiver<Message> {
+public class ProxyServer implements IProxy {
 
     // ------------------------ 变量定义 ------------------------
 
@@ -75,7 +76,12 @@ public class ProxyServer implements IProxy, IReceiver<Message> {
     public void stop() {
         server.stop();
     }
-
+    
+    @Override
+    public ProxyStatus status() {
+        return null;
+    }
+    
     @Override
     public boolean isAccept(String host) {
         return conf.getAllowClients().contains(host);
@@ -91,7 +97,12 @@ public class ProxyServer implements IProxy, IReceiver<Message> {
             }
         }
     }
-
+    
+    @Override
+    public void send(Message... messages) {
+    
+    }
+    
     // ------------------------ 内部类 ------------------------
 
     /**
