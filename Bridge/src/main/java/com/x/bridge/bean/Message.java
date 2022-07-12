@@ -33,7 +33,7 @@ public class Message implements Serializable {
     /**
      * 代理服务器地址
      */
-    private String proxyServer;
+    private String agentServer;
 
     /**
      * 命令
@@ -84,12 +84,12 @@ public class Message implements Serializable {
         this.appPort = appPort;
     }
 
-    public String getProxyServer() {
-        return proxyServer;
+    public String getAgentServer() {
+        return agentServer;
     }
 
-    public void setProxyServer(String proxyServer) {
-        this.proxyServer = proxyServer;
+    public void setAgentServer(String agentServer) {
+        this.agentServer = agentServer;
     }
 
     public String getCmd() {

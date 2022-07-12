@@ -1,8 +1,8 @@
 package com.x.bridge.transport;
 
-import com.x.bridge.transport.factory.DBSender;
-import com.x.bridge.transport.interfaces.ISender;
-import com.x.bridge.transport.mode.db.MessageService;
+import com.x.bridge.transport.factory.DBWriter;
+import com.x.bridge.transport.interfaces.IWriter;
+import com.x.bridge.transport.mode.db.server.ServerWriteActor;
 
 /**
  * 传输管理者
@@ -11,10 +11,10 @@ import com.x.bridge.transport.mode.db.MessageService;
  */
 public class SenderManager {
 
-    public static ISender newSender(String sendMode){
+    public static IWriter newSender(String sendMode){
         switch (sendMode){
             case "DB":
-                return new DBSender(new MessageService());
+                return new DBWriter(new ServerWriteActor());
             default:
                 break;
         }

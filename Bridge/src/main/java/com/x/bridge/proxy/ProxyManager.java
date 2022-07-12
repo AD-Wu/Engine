@@ -1,6 +1,6 @@
 package com.x.bridge.proxy;
 
-import com.x.bridge.proxy.core.Replier;
+import com.x.bridge.proxy.session.Session;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,27 +12,27 @@ import java.util.Map;
  */
 public final class ProxyManager {
 
-    private static final Map<String, Map<String, Replier>> proxies = new HashMap<>();
+    private static final Map<String, Map<String, Session>> proxies = new HashMap<>();
 
     public static void closeReplier(String proxyServer, String appClient) {
-        Map<String, Replier> clients = proxies.get(proxyServer);
+        Map<String, Session> clients = proxies.get(proxyServer);
         if (clients != null) {
             synchronized (clients) {
-                Replier replier = clients.remove(appClient);
-                if (replier != null) {
-                    replier.close();
+                Session session = clients.remove(appClient);
+                if (session != null) {
+                    session.close();
                 }
             }
         }
     }
 
-    public static void putReplier(String proxyServer, String appClient, Replier replier) {
+    public static void putReplier(String proxyServer, String appClient, Session session) {
         if (proxies.containsKey(proxyServer)) {
-            Map<String, Replier> clients = proxies.get(proxyServer);
+            Map<String, Session> clients = proxies.get(proxyServer);
             if (!clients.containsKey(appClient)) {
                 synchronized (clients) {
                     if (!clients.containsKey(appClient)) {
-                        clients.put(appClient, replier);
+                        clients.put(appClient, session);
                     }
                 }
             }

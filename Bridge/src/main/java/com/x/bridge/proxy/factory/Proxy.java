@@ -1,25 +1,35 @@
 package com.x.bridge.proxy.factory;
 
 import com.x.bridge.bean.Message;
+import com.x.bridge.enums.Command;
 import com.x.bridge.enums.ProxyStatus;
+import com.x.bridge.enums.TransportEngineStatus;
 import com.x.bridge.proxy.interfaces.IProxy;
+import com.x.bridge.proxy.interfaces.ISessionManager;
 import com.x.bridge.transport.interfaces.ITransportEngine;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * @author AD
  * @date 2022/7/11 19:49
  */
+@Log4j2
 public class Proxy implements IProxy {
-    
+
     /**
      * 传输引擎
      */
-    private final ITransportEngine<Message> te;
-    
-   
-    
-    public Proxy(ITransportEngine<Message> te){
-        this.te = te;
+    private final ITransportEngine transportEngine;
+
+    /**
+     * socket会话管理者
+     */
+    private final ISessionManager sessionManager;
+
+
+    public Proxy(ITransportEngine transportEngine, ISessionManager sessionManager) {
+        this.transportEngine = transportEngine;
+        this.sessionManager = sessionManager;
     }
 
     @Override
@@ -28,37 +38,52 @@ public class Proxy implements IProxy {
     }
 
     @Override
+    public TransportEngineStatus transportStatus() {
+        return transportEngine.status();
+    }
+
+    @Override
     public String name() {
-        return null;
+        return sessionManager.name();
     }
 
     @Override
     public boolean isServerMode() {
-        return false;
+        return sessionManager.isServerMode();
     }
 
     @Override
-    public synchronized boolean start() {
-        if(te.start()){
-        
-        }else{
-        
+    public boolean start() {
+        if (transportEngine.start()) {
+            log.info("传输引擎启动成功");
+            if (sessionManager.start()) {
+                log.info("Socket会话管理启动成功");
+                return true;
+            }
+            log.info("Socket会话管理启动成功");
+            return false;
         }
+        log.error("传输引擎启动失败");
         return false;
     }
 
     @Override
-    public synchronized void stop() {
-
+    public void stop() {
+        sessionManager.stop();
+        transportEngine.stop();
+        log.info("代理关闭");
     }
 
     @Override
-    public void receive(Message... messages) {
-
-    }
-
-    @Override
-    public void send(Message... messages) {
-
+    public void receive(Message... msgs) {
+        for (int i = 0; i < msgs.length; i++) {
+            Message msg = msgs[i];
+            Command cmd = Command.get(msg.getCmd());
+            if (cmd != null) {
+                cmd.execute(msg, sessionManager);
+            } else {
+                log.error("非法命令:{}", msg.getCmd());
+            }
+        }
     }
 }

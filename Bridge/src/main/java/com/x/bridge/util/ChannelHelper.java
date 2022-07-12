@@ -15,10 +15,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2022/6/21 16:01
  */
 public class ChannelHelper {
-    
-    private static final Map<String, ChnInfo> chnInfos = new ConcurrentHashMap<>();
-    
-    public static ChnInfo getChannelInfo(ChannelHandlerContext ctx) {
+
+    private static final Map<String, ChannelInfo> chnInfos = new ConcurrentHashMap<>();
+
+    public static ChannelInfo getChannelInfo(ChannelHandlerContext ctx) {
         Channel chn = ctx.channel();
         String local = chn.localAddress().toString().substring(1);
         String remote = chn.remoteAddress().toString().substring(1);
@@ -28,7 +28,7 @@ public class ChannelHelper {
         }
         synchronized (chnInfos) {
             if (!chnInfos.containsKey(key)) {
-                ChnInfo ci = new ChnInfo();
+                ChannelInfo ci = new ChannelInfo();
                 ci.setRemote(remote);
                 ci.setLocal(local);
                 String[] remotes = remote.split(":");
@@ -46,7 +46,7 @@ public class ChannelHelper {
         }
         return chnInfos.get(key);
     }
-    
+
     public static byte[] readData(ByteBuf buf) {
         if (buf != null) {
             int len = buf.readableBytes();
@@ -56,9 +56,9 @@ public class ChannelHelper {
         }
         return Arrayx.EMPTY_BYTE_ARRAY;
     }
-    
+
     private static String genKey(String remote, String local) {
         return remote + "|" + local;
     }
-    
+
 }
