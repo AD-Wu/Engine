@@ -1,4 +1,4 @@
-package com.x.bridge.proxy.session.listener;
+package com.x.bridge.proxy.session;
 
 /**
  * @author AD
@@ -8,7 +8,6 @@ package com.x.bridge.proxy.session.listener;
 import com.x.bridge.enums.Command;
 import com.x.bridge.netty.interfaces.ISessionListener;
 import com.x.bridge.proxy.interfaces.ISessionManager;
-import com.x.bridge.proxy.session.Session;
 import com.x.bridge.util.ChannelHelper;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -33,9 +32,9 @@ public class ClientListener implements ISessionListener {
     @Override
     public void active(ChannelHandlerContext chn) throws Exception {
         log.info("连接建立:{}", appClient);
-        Session session = new Session(chn, appClient, sessionManager);
+        Session session = sessionManager.getSession(appClient);
+        session.setChannel(chn);
         session.setConnectSuccess(true);
-        sessionManager.addSession(appClient, session);
         session.send(Command.openSuccess, null);
     }
 
@@ -43,9 +42,13 @@ public class ClientListener implements ISessionListener {
     public void inActive(ChannelHandlerContext chn) throws Exception {
         log.info("代理【{}】连接关闭【{}】", sessionManager.name(), appClient);
         Session session = sessionManager.closeSession(appClient);
-        if (session != null && session.isConnectSuccess()) {
-            log.info("通知另一端代理关闭连接:【{}】", appClient);
-            session.send(Command.close, null);
+        if (session != null) {
+            if (session.isConnectSuccess()) {
+                log.info("通知另一端代理关闭连接:【{}】", appClient);
+                session.send(Command.close, null);
+            } else {
+                log.info("无需通知另一端代理关闭连接:【{}】", appClient);
+            }
         }
     }
 

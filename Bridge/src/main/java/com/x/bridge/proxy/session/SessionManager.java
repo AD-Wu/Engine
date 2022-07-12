@@ -1,11 +1,10 @@
-package com.x.bridge.proxy.factory;
+package com.x.bridge.proxy.session;
 
 import com.x.bridge.netty.factory.SocketServer;
 import com.x.bridge.netty.interfaces.ISocket;
 import com.x.bridge.proxy.data.AgentConfig;
 import com.x.bridge.proxy.interfaces.ISessionManager;
-import com.x.bridge.proxy.session.Session;
-import com.x.bridge.proxy.session.listener.ServerListener;
+import io.netty.channel.ChannelHandlerContext;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -92,6 +91,16 @@ public class SessionManager implements ISessionManager {
     @Override
     public synchronized Session getSession(String appClient) {
         return sessions.get(appClient);
+    }
+
+    @Override
+    public Session createSession(String appClient) {
+        return new Session(appClient, this);
+    }
+
+    @Override
+    public Session createSession(ChannelHandlerContext ctx, String appClient) {
+        return new Session(ctx, appClient, this);
     }
 
 

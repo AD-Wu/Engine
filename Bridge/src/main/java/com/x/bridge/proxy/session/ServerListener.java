@@ -1,4 +1,4 @@
-package com.x.bridge.proxy.session.listener;
+package com.x.bridge.proxy.session;
 
 /**
  * @author AD
@@ -8,7 +8,6 @@ package com.x.bridge.proxy.session.listener;
 import com.x.bridge.enums.Command;
 import com.x.bridge.netty.interfaces.ISessionListener;
 import com.x.bridge.proxy.interfaces.ISessionManager;
-import com.x.bridge.proxy.session.Session;
 import com.x.bridge.util.ChannelHelper;
 import com.x.bridge.util.ChannelInfo;
 import io.netty.buffer.ByteBuf;
@@ -33,7 +32,7 @@ public class ServerListener implements ISessionListener {
         ChannelInfo ci = ChannelHelper.getChannelInfo(chn);
         if (sessionManager.isAccept(ci.getRemoteHost())) {
             log.info("代理【{}】连接建立【{}】,同步连接中...", sessionManager.name(), ci.getRemote());
-            Session session = new Session(chn, ci.getRemote(), sessionManager);
+            Session session = sessionManager.createSession(chn, ci.getRemote());
             sessionManager.addSession(ci.getRemote(), session);
             session.send(Command.open, null);
         } else {

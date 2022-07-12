@@ -5,7 +5,7 @@ import com.x.bridge.netty.core.SocketConfig;
 import com.x.bridge.netty.factory.SocketClient;
 import com.x.bridge.proxy.interfaces.ISessionManager;
 import com.x.bridge.proxy.session.Session;
-import com.x.bridge.proxy.session.listener.ClientListener;
+import com.x.bridge.proxy.session.ClientListener;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.log4j.Log4j2;

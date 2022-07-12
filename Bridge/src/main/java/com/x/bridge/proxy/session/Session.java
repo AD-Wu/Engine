@@ -20,7 +20,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public final class Session {
 
-    private final ChannelHandlerContext chn;
+    private ChannelHandlerContext chn;
 
     private final String appClient;
 
@@ -36,7 +36,11 @@ public final class Session {
 
     private long nextRecv;
 
-    public Session(ChannelHandlerContext chn, String appClient, ISessionManager manager) {
+    Session(String appClient, ISessionManager manager) {
+        this(null, appClient, manager);
+    }
+
+    Session(ChannelHandlerContext chn, String appClient, ISessionManager manager) {
         this.chn = chn;
         this.appClient = appClient;
         this.manager = manager;
@@ -82,6 +86,12 @@ public final class Session {
         if (chn != null) {
             chn.close();
             connectSuccess = false;
+        }
+    }
+
+    void setChannel(ChannelHandlerContext chn) {
+        if (chn != null) {
+            this.chn = chn;
         }
     }
 
