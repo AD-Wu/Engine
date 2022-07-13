@@ -7,7 +7,6 @@ package com.x.bridge.proxy.session;
 
 import com.x.bridge.enums.Command;
 import com.x.bridge.netty.interfaces.ISessionListener;
-import com.x.bridge.proxy.interfaces.ISessionManager;
 import com.x.bridge.util.ChannelHelper;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,11 +19,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ClientListener implements ISessionListener {
 
-    private final ISessionManager sessionManager;
+    private final SessionManager sessionManager;
 
     private final String appClient;
 
-    public ClientListener(ISessionManager sessionManager, String appClient) {
+    public ClientListener(SessionManager sessionManager, String appClient) {
         this.sessionManager = sessionManager;
         this.appClient = appClient;
     }
@@ -43,7 +42,6 @@ public class ClientListener implements ISessionListener {
         log.info("代理【{}】连接关闭【{}】", sessionManager.name(), appClient);
         Session session = sessionManager.removeSession(appClient);
         if (session != null) {
-            session.close();
             if (session.isConnected()) {
                 log.info("通知另一端代理关闭连接:【{}】", appClient);
                 session.closeConnect();

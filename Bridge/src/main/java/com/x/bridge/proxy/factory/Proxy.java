@@ -5,7 +5,7 @@ import com.x.bridge.enums.Command;
 import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.enums.TransportEngineStatus;
 import com.x.bridge.proxy.interfaces.IProxy;
-import com.x.bridge.proxy.interfaces.ISessionManager;
+import com.x.bridge.proxy.session.SessionManager;
 import com.x.bridge.transport.interfaces.ITransportEngine;
 import lombok.extern.log4j.Log4j2;
 
@@ -24,10 +24,10 @@ public class Proxy implements IProxy {
     /**
      * socket会话管理者
      */
-    private final ISessionManager sessionManager;
+    private final SessionManager sessionManager;
 
 
-    public Proxy(ITransportEngine transportEngine, ISessionManager sessionManager) {
+    public Proxy(ITransportEngine transportEngine, SessionManager sessionManager) {
         this.transportEngine = transportEngine;
         this.sessionManager = sessionManager;
     }
@@ -78,11 +78,11 @@ public class Proxy implements IProxy {
     public void receive(Message... msgs) {
         for (int i = 0; i < msgs.length; i++) {
             Message msg = msgs[i];
-            Command cmd = Command.get(msg.getCmd());
+            Command cmd = Command.get(msg.getCmdCode());
             if (cmd != null) {
                 cmd.execute(msg, sessionManager);
             } else {
-                log.error("非法命令:{}", msg.getCmd());
+                log.error("非法命令:{}", msg.getCmdCode());
             }
         }
 

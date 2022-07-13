@@ -3,7 +3,6 @@ package com.x.bridge.proxy.session;
 import com.x.bridge.netty.factory.SocketServer;
 import com.x.bridge.netty.interfaces.ISocket;
 import com.x.bridge.proxy.data.AgentConfig;
-import com.x.bridge.proxy.interfaces.ISessionManager;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +14,7 @@ import lombok.extern.log4j.Log4j2;
  * @date 2022/7/12 12:15
  */
 @Log4j2
-public class SessionManager implements ISessionManager {
+public class SessionManager implements ISocket {
 
     private final AgentConfig conf;
     private final Map<String, Session> sessions;
@@ -55,12 +54,10 @@ public class SessionManager implements ISessionManager {
         }
     }
 
-    @Override
     public AgentConfig getAgentConfig() {
         return conf;
     }
 
-    @Override
     public boolean isAccept(String clientHost) {
         Set<String> allows = conf.getAllowClients();
         if (allows == null || allows.size() == 0) {
@@ -70,12 +67,10 @@ public class SessionManager implements ISessionManager {
         }
     }
 
-    @Override
     public synchronized boolean containSession(String appClient) {
         return sessions.containsKey(appClient);
     }
 
-    @Override
     public synchronized void putSession(String appClient, Session session) {
         if (!sessions.containsKey(appClient)) {
             sessions.put(appClient, session);
@@ -83,8 +78,7 @@ public class SessionManager implements ISessionManager {
         }
     }
 
-    @Override
-    public synchronized Session removeSession(String appClient) {
+    synchronized Session removeSession(String appClient) {
         Session session = sessions.remove(appClient);
         if (session != null) {
             log.info("移除会话:【{}】", appClient);
@@ -92,17 +86,14 @@ public class SessionManager implements ISessionManager {
         return session;
     }
 
-    @Override
     public synchronized Session getSession(String appClient) {
         return sessions.get(appClient);
     }
 
-    @Override
     public Session createSession(String appClient) {
         return new Session(appClient, this);
     }
 
-    @Override
     public Session createSession(ChannelHandlerContext ctx, String appClient) {
         return new Session(ctx, appClient, this);
     }

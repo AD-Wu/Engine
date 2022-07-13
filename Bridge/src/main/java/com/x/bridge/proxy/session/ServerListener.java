@@ -7,7 +7,6 @@ package com.x.bridge.proxy.session;
 
 import com.x.bridge.enums.Command;
 import com.x.bridge.netty.interfaces.ISessionListener;
-import com.x.bridge.proxy.interfaces.ISessionManager;
 import com.x.bridge.util.ChannelHelper;
 import com.x.bridge.util.ChannelInfo;
 import io.netty.buffer.ByteBuf;
@@ -20,13 +19,13 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class ServerListener implements ISessionListener {
-    
-    private final ISessionManager sessionManager;
-    
-    public ServerListener(ISessionManager sessionManager) {
+
+    private final SessionManager sessionManager;
+
+    public ServerListener(SessionManager sessionManager) {
         this.sessionManager = sessionManager;
     }
-    
+
     @Override
     public void active(ChannelHandlerContext chn) throws Exception {
         ChannelInfo ci = ChannelHelper.getChannelInfo(chn);
@@ -39,13 +38,12 @@ public class ServerListener implements ISessionListener {
             log.warn("代理【{}】非法客户端连接【{}】", sessionManager.name(), ci.getRemote());
         }
     }
-    
+
     @Override
     public void inActive(ChannelHandlerContext chn) throws Exception {
         ChannelInfo ci = ChannelHelper.getChannelInfo(chn);
         Session session = sessionManager.removeSession(ci.getRemote());
         if (session != null) {
-            session.close();
             if (session.isConnected()) {
                 log.info("代理【{}】连接关闭【{}】,通知另一端代理关闭", sessionManager.name(), ci.getRemote());
                 session.closeConnect();
@@ -54,7 +52,7 @@ public class ServerListener implements ISessionListener {
             }
         }
     }
-    
+
     @Override
     public void receive(ChannelHandlerContext chn, ByteBuf buf) throws Exception {
         ChannelInfo ci = ChannelHelper.getChannelInfo(chn);
@@ -66,15 +64,15 @@ public class ServerListener implements ISessionListener {
             }
         }
     }
-    
+
     @Override
     public void timeout(ChannelHandlerContext ctx, IdleStateEvent event) throws Exception {
-    
+
     }
-    
+
     @Override
     public void error(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    
+
     }
-    
+
 }

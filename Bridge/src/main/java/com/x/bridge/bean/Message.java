@@ -38,7 +38,7 @@ public class Message implements Serializable {
     /**
      * 命令
      */
-    private String cmd;
+    private int cmdCode;
 
     /**
      * 传输序号
@@ -92,12 +92,12 @@ public class Message implements Serializable {
         this.agentServer = agentServer;
     }
 
-    public String getCmd() {
-        return cmd;
+    public int getCmdCode() {
+        return cmdCode;
     }
 
-    public void setCmd(String cmd) {
-        this.cmd = cmd;
+    public void setCmdCode(int cmd) {
+        this.cmdCode = cmd;
     }
 
     public long getSeq() {
