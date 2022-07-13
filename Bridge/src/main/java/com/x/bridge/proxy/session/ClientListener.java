@@ -46,7 +46,7 @@ public class ClientListener implements ISessionListener {
             session.close();
             if (session.isConnected()) {
                 log.info("通知另一端代理关闭连接:【{}】", appClient);
-                session.send(Command.close, null);
+                session.closeConnect();
             } else {
                 log.info("无需通知另一端代理关闭连接:【{}】", appClient);
             }
