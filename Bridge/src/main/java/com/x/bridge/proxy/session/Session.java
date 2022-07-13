@@ -86,8 +86,14 @@ public final class Session {
 
     }
 
-    public void setConnected(boolean connSuccess) {
-        this.connected = connSuccess;
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+        if (connected) {
+            Message next = receives.remove(nextRecv);
+            if (next != null) {
+                receive(next);
+            }
+        }
     }
 
     public boolean isConnected() {
