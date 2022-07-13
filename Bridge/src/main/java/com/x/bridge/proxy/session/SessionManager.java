@@ -71,7 +71,12 @@ public class SessionManager implements ISessionManager {
     }
 
     @Override
-    public synchronized void addSession(String appClient, Session session) {
+    public synchronized boolean containSession(String appClient) {
+        return sessions.containsKey(appClient);
+    }
+
+    @Override
+    public synchronized void putSession(String appClient, Session session) {
         if (!sessions.containsKey(appClient)) {
             sessions.put(appClient, session);
             log.info("新增会话:【{}】", appClient);
@@ -79,11 +84,10 @@ public class SessionManager implements ISessionManager {
     }
 
     @Override
-    public synchronized Session closeSession(String appClient) {
+    public synchronized Session removeSession(String appClient) {
         Session session = sessions.remove(appClient);
         if (session != null) {
-            session.close();
-            log.info("关闭会话:【{}】", appClient);
+            log.info("移除会话:【{}】", appClient);
         }
         return session;
     }

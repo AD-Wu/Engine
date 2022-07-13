@@ -41,8 +41,9 @@ public class ClientListener implements ISessionListener {
     @Override
     public void inActive(ChannelHandlerContext chn) throws Exception {
         log.info("代理【{}】连接关闭【{}】", sessionManager.name(), appClient);
-        Session session = sessionManager.closeSession(appClient);
+        Session session = sessionManager.removeSession(appClient);
         if (session != null) {
+            session.close();
             if (session.isConnectSuccess()) {
                 log.info("通知另一端代理关闭连接:【{}】", appClient);
                 session.send(Command.close, null);
@@ -63,19 +64,20 @@ public class ClientListener implements ISessionListener {
 
     @Override
     public void timeout(ChannelHandlerContext chn, IdleStateEvent event) throws Exception {
-        Session session = sessionManager.closeSession(appClient);
+        Session session = sessionManager.removeSession(appClient);
         if (session != null) {
             session.send(Command.timeout, null);
+            session.close();
             log.info("连接超时:【{}】", appClient);
         }
-
     }
 
     @Override
     public void error(ChannelHandlerContext chn, Throwable cause) throws Exception {
-        Session session = sessionManager.closeSession(appClient);
+        Session session = sessionManager.removeSession(appClient);
         if (session != null) {
             session.send(Command.openFail, null);
+            session.close();
             log.info("连接错误:【{}】", appClient);
         }
     }

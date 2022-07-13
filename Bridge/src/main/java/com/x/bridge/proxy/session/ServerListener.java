@@ -33,8 +33,8 @@ public class ServerListener implements ISessionListener {
         if (sessionManager.isAccept(ci.getRemoteHost())) {
             log.info("代理【{}】连接建立【{}】,同步连接中...", sessionManager.name(), ci.getRemote());
             Session session = sessionManager.createSession(chn, ci.getRemote());
-            sessionManager.addSession(ci.getRemote(), session);
-            session.send(Command.open, null);
+            sessionManager.putSession(ci.getRemote(), session);
+            session.openConnect();
         } else {
             log.warn("代理【{}】非法客户端连接【{}】", sessionManager.name(), ci.getRemote());
         }
@@ -43,8 +43,9 @@ public class ServerListener implements ISessionListener {
     @Override
     public void inActive(ChannelHandlerContext chn) throws Exception {
         ChannelInfo ci = ChannelHelper.getChannelInfo(chn);
-        Session session = sessionManager.closeSession(ci.getRemote());
+        Session session = sessionManager.removeSession(ci.getRemote());
         if (session != null) {
+            session.close();
             if (session.isConnectSuccess()) {
                 log.info("代理【{}】连接关闭【{}】,通知另一端代理关闭", sessionManager.name(), ci.getRemote());
                 session.send(Command.close, null);

@@ -71,7 +71,7 @@ public class Proxy implements IProxy {
     public void stop() {
         sessionManager.stop();
         transportEngine.stop();
-        log.info("代理关闭");
+        log.info("代理关闭:【{}】", name());
     }
 
     @Override
@@ -85,5 +85,6 @@ public class Proxy implements IProxy {
                 log.error("非法命令:{}", msg.getCmd());
             }
         }
+
     }
 }

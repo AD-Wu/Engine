@@ -26,15 +26,15 @@ public final class Session {
 
     private final ISessionManager manager;
 
-    private volatile boolean connectSuccess;
+    private volatile boolean connSuccess;
 
     private final Queue<Message> sends;
 
     private final Map<Long, Message> receives;
 
-    private long nextSend;
+    private long nextSend = 1;
 
-    private long nextRecv;
+    private long nextRecv = 1;
 
     Session(String appClient, ISessionManager manager) {
         this(null, appClient, manager);
@@ -44,13 +44,20 @@ public final class Session {
         this.chn = chn;
         this.appClient = appClient;
         this.manager = manager;
-        this.connectSuccess = false;
+        this.connSuccess = false;
         this.sends = new LinkedBlockingQueue<>();
         this.receives = new ConcurrentHashMap<>();
     }
 
+    public void openConnect() {
+        if (manager.isServerMode()) {
+            Message msg = buildMessage(Command.open, null, 0);
+            sends.add(msg);
+        }
+    }
+
     public void send(@Nonnull Command cmd, byte[] data) {
-        Message msg = buildMessage(cmd, data);
+        Message msg = buildMessage(cmd, data, nextSendSeq());
         sends.add(msg);
     }
 
@@ -74,18 +81,18 @@ public final class Session {
         }
     }
 
-    public void setConnectSuccess(boolean connectSuccess) {
-        this.connectSuccess = connectSuccess;
+    public void setConnectSuccess(boolean connSuccess) {
+        this.connSuccess = connSuccess;
     }
 
     public boolean isConnectSuccess() {
-        return this.connectSuccess;
+        return this.connSuccess;
     }
 
     public void close() {
         if (chn != null) {
             chn.close();
-            connectSuccess = false;
+            connSuccess = false;
         }
     }
 
@@ -95,9 +102,9 @@ public final class Session {
         }
     }
 
-    private Message buildMessage(Command cmd, byte[] data) {
+    private Message buildMessage(Command cmd, byte[] data, long seq) {
         Message msg = new Message();
-        msg.setSeq(nextSendSeq());
+        msg.setSeq(seq);
         msg.setCmd(cmd.toString());
         msg.setData(data);
         msg.setAppClient(appClient);
@@ -112,5 +119,4 @@ public final class Session {
     private synchronized long nextSendSeq() {
         return nextSend++;
     }
-
 }

@@ -15,9 +15,11 @@ public interface ISessionManager extends ISocket {
 
     boolean isAccept(String clientHost);
 
-    void addSession(String appClient, Session session);
+    boolean containSession(String appClient);
 
-    Session closeSession(String appClient);
+    void putSession(String appClient, Session session);
+
+    Session removeSession(String appClient);
 
     Session getSession(String appClient);
 

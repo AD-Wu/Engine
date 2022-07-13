@@ -20,6 +20,19 @@ public enum Command {
     open {
         @Override
         public void execute(Message msg, ISessionManager manager) {
+            if (!manager.isServerMode()) {
+                Session session = manager.getSession(msg.getAppClient());
+                if (session != null) {
+                    session.receive(msg);
+                }
+            } else {
+                if (!manager.containSession(msg.getAppClient())) {
+                    Session session = manager.createSession(msg.getAppClient());
+                    manager.putSession(msg.getAppClient(), session);
+                }
+                Session session = manager.getSession(msg.getAppClient());
+                session.receive(msg);
+            }
             log.info("另一端代理【{}】发来会话【{}】建立命令", msg.getAgentServer(), msg.getAppClient());
             String appClient = msg.getAppClient();
             SocketConfig conf = SocketConfig.getClientConfig(msg.getAppHost(), msg.getAppPort());
@@ -31,14 +44,14 @@ public enum Command {
         @Override
         public void execute(Message msg, ISessionManager manager) {
             log.info("另一端代理【{}】发来会话【{}】关闭命令", msg.getAgentServer(), msg.getAppClient());
-            manager.closeSession(msg.getAppClient());
+            manager.removeSession(msg.getAppClient());
         }
     },
     timeout {
         @Override
         public void execute(Message msg, ISessionManager manager) {
             log.info("另一端代理【{}】会话【{}】建立超时", msg.getAgentServer(), msg.getAppClient());
-            Session session = manager.closeSession(msg.getAppClient());
+            Session session = manager.removeSession(msg.getAppClient());
             if (session != null) {
                 session.setConnectSuccess(false);
             }
@@ -58,14 +71,23 @@ public enum Command {
         @Override
         public void execute(Message msg, ISessionManager manager) {
             log.info("另一端代理【{}】会话【{}】建立失败", msg.getAgentServer(), msg.getAppClient());
-            manager.closeSession(msg.getAppClient());
+            manager.removeSession(msg.getAppClient());
         }
     },
     data {
         @Override
         public void execute(Message msg, ISessionManager manager) {
-            Session session = manager.getSession(msg.getAppClient());
-            if (session != null) {
+            if (manager.isServerMode()) {
+                Session session = manager.getSession(msg.getAppClient());
+                if (session != null) {
+                    session.receive(msg);
+                }
+            } else {
+                if (!manager.containSession(msg.getAppClient())) {
+                    Session session = manager.createSession(msg.getAppClient());
+                    manager.putSession(msg.getAppClient(), session);
+                }
+                Session session = manager.getSession(msg.getAppClient());
                 session.receive(msg);
             }
         }
