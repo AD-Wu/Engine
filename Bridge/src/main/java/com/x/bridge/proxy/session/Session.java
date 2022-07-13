@@ -98,7 +98,6 @@ public final class Session {
     }
 
     public void close() {
-        connected = false;
         if (chn != null) {
             synchronized (this) {
                 if (chn != null) {

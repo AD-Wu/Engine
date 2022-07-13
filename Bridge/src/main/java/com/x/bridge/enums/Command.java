@@ -69,6 +69,7 @@ public enum Command {
             Session session = manager.getSession(msg.getAppClient());
             if (session != null) {
                 session.close();
+                session.setConnected(false);
             }
         }
     },

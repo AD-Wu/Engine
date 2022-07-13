@@ -43,10 +43,10 @@ public class ClientListener implements ISessionListener {
         Session session = sessionManager.removeSession(appClient);
         if (session != null) {
             if (session.isConnected()) {
-                log.info("通知另一端代理关闭连接:【{}】", appClient);
+                log.info("代理【{}】连接关闭【{}】,通知另一端代理关闭", sessionManager.name(), appClient);
                 session.closeConnect();
             } else {
-                log.info("无需通知另一端代理关闭连接:【{}】", appClient);
+                log.info("代理【{}】连接关闭【{}】,无需通知另一端代理", sessionManager.name(), appClient);
             }
         }
     }
