@@ -20,17 +20,17 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public final class Session {
 
-    private ChannelHandlerContext chn;
-
     private final String appClient;
 
     private final ISessionManager manager;
 
-    private volatile boolean connSuccess;
+    private volatile boolean connected;
 
     private final Queue<Message> sends;
 
     private final Map<Long, Message> receives;
+
+    private ChannelHandlerContext chn;
 
     private long nextSend = 1;
 
@@ -44,7 +44,7 @@ public final class Session {
         this.chn = chn;
         this.appClient = appClient;
         this.manager = manager;
-        this.connSuccess = false;
+        this.connected = false;
         this.sends = new LinkedBlockingQueue<>();
         this.receives = new ConcurrentHashMap<>();
     }
@@ -62,37 +62,42 @@ public final class Session {
     }
 
     public void receive(Message msg) {
-        if (msg.getSeq() > nextRecv) {
-            receives.put(msg.getSeq(), msg);
-        } else {
-            if (nextRecv == msg.getSeq()) {
-                synchronized (this) {
-                    if (nextRecv == msg.getSeq()) {
-                        chn.write(msg.getData());
-                        ++nextRecv;
-                        log.info("会话【{}】发送第【{}】条数据【{}】", appClient, msg.getSeq(), msg.getData().length);
+        if (isConnected()) {
+            if (msg.getSeq() > nextRecv) {
+                receives.put(msg.getSeq(), msg);
+            } else {
+                if (nextRecv == msg.getSeq()) {
+                    synchronized (this) {
+                        if (nextRecv == msg.getSeq()) {
+                            chn.write(msg.getData());
+                            ++nextRecv;
+                            log.info("会话【{}】发送第【{}】条数据【{}】", appClient, msg.getSeq(), msg.getData().length);
+                        }
                     }
                 }
+                Message next = receives.remove(nextRecv);
+                if (next != null) {
+                    receive(next);
+                }
             }
-            Message next = receives.remove(nextRecv);
-            if (next != null) {
-                receive(next);
-            }
+        } else {
+            receives.put(msg.getSeq(), msg);
         }
+
     }
 
-    public void setConnectSuccess(boolean connSuccess) {
-        this.connSuccess = connSuccess;
+    public void setConnected(boolean connSuccess) {
+        this.connected = connSuccess;
     }
 
-    public boolean isConnectSuccess() {
-        return this.connSuccess;
+    public boolean isConnected() {
+        return this.connected;
     }
 
     public void close() {
         if (chn != null) {
             chn.close();
-            connSuccess = false;
+            connected = false;
         }
     }
 

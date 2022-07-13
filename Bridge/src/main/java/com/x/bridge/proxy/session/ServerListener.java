@@ -46,7 +46,7 @@ public class ServerListener implements ISessionListener {
         Session session = sessionManager.removeSession(ci.getRemote());
         if (session != null) {
             session.close();
-            if (session.isConnectSuccess()) {
+            if (session.isConnected()) {
                 log.info("代理【{}】连接关闭【{}】,通知另一端代理关闭", sessionManager.name(), ci.getRemote());
                 session.send(Command.close, null);
             } else {

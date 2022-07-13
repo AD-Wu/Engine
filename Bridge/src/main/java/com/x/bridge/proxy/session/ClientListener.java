@@ -34,7 +34,7 @@ public class ClientListener implements ISessionListener {
         log.info("连接建立:{}", appClient);
         Session session = sessionManager.getSession(appClient);
         session.setChannel(chn);
-        session.setConnectSuccess(true);
+        session.setConnected(true);
         session.send(Command.openSuccess, null);
     }
 
@@ -44,7 +44,7 @@ public class ClientListener implements ISessionListener {
         Session session = sessionManager.removeSession(appClient);
         if (session != null) {
             session.close();
-            if (session.isConnectSuccess()) {
+            if (session.isConnected()) {
                 log.info("通知另一端代理关闭连接:【{}】", appClient);
                 session.send(Command.close, null);
             } else {
