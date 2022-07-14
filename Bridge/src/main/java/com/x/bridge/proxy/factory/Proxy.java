@@ -1,12 +1,16 @@
 package com.x.bridge.proxy.factory;
 
 import com.x.bridge.bean.Message;
-import com.x.bridge.enums.Command;
 import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.enums.TransportEngineStatus;
 import com.x.bridge.proxy.interfaces.IProxy;
+import com.x.bridge.proxy.session.Session;
 import com.x.bridge.proxy.session.SessionManager;
 import com.x.bridge.transport.interfaces.ITransportEngine;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -75,16 +79,25 @@ public class Proxy implements IProxy {
     }
 
     @Override
-    public void receive(Message... msgs) {
-        for (int i = 0; i < msgs.length; i++) {
-            Message msg = msgs[i];
-            Command cmd = Command.get(msg.getCmdCode());
-            if (cmd != null) {
-                cmd.execute(msg, sessionManager);
-            } else {
-                log.error("非法命令:{}", msg.getCmdCode());
-            }
-        }
+    public void receive(Message... messages) {
+        // 分组
+        Map<String, List<Message>> groups = Arrays.asList(messages).stream().parallel()
+            .collect(Collectors.groupingBy(Message::getAppClient));
 
+        groups.entrySet().stream().forEach(entry -> {
+            String client = entry.getKey();
+            Message[] msgs = entry.getValue().toArray(new Message[0]);
+            // 客户端
+            if (!isServerMode()) {
+                if (!sessionManager.containSession(client)) {
+                    Session session = sessionManager.createSession(client);
+                    sessionManager.putSession(client, session);
+                }
+            }
+            Session session = sessionManager.getSession(client);
+            if (session != null) {
+                session.receive(msgs);
+            }
+        });
     }
 }

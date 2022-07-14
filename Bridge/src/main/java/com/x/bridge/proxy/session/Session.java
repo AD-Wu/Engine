@@ -2,7 +2,9 @@ package com.x.bridge.proxy.session;
 
 import com.google.common.base.Objects;
 import com.x.bridge.bean.Message;
-import com.x.bridge.enums.Command;
+import com.x.bridge.proxy.command.core.Command;
+import com.x.bridge.netty.core.SocketConfig;
+import com.x.bridge.netty.factory.SocketClient;
 import com.x.bridge.proxy.data.AgentConfig;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.Map;
@@ -28,8 +30,6 @@ public final class Session {
 
     private final Map<Long, Message> receives;
 
-    private final Object lock;
-
     private volatile boolean connected;
 
     private ChannelHandlerContext chn;
@@ -46,7 +46,6 @@ public final class Session {
         this.chn = chn;
         this.appClient = appClient;
         this.manager = manager;
-        this.lock = new Object();
         this.connected = false;
         this.sends = new LinkedBlockingQueue<>();
         this.receives = new ConcurrentHashMap<>();
@@ -54,46 +53,58 @@ public final class Session {
         resetRecvSeq();
     }
 
-    public void openConnect() {
-        if (manager.isServerMode()) {
-            Message msg = buildMessage(Command.open, null, 0);
-            sends.add(msg);
-        }
-    }
-
-    public void closeConnect() {
-        Message msg = buildMessage(Command.close, null, Long.MAX_VALUE);
-        sends.add(msg);
-    }
-
     void send(@Nonnull Command cmd, byte[] data) {
         Message msg = buildMessage(cmd, data, nextSendSeq());
         sends.add(msg);
     }
 
-    public void receive(Message msg) {
-        if (msg.getCmdCode() == Command.data.code) {
-            if (isConnected()) {
-                if (msg.getSeq() > nextRecv) {
-                    receives.put(msg.getSeq(), msg);
-                } else {
-                    if (nextRecv == msg.getSeq()) {
-                        synchronized (this) {
-                            if (nextRecv == msg.getSeq()) {
-                                chn.write(msg.getData());
-                                nextRecvSeq();
-                                log.info("会话【{}】发送第【{}】条数据【{}】", appClient, msg.getSeq(), msg.getData().length);
-                            }
-                        }
-                    }
-                    Message next = receives.remove(nextRecv);
-                    if (next != null) {
-                        receive(next);
+    public void receive(Message... msgs) {
+        for (int i = 0; i < msgs.length; i++) {
+            Message msg = msgs[i];
+            receives.put(msg.getSeq(), msg);
+        }
+        Message next = receives.remove(nextRecv);
+        if (next != null) {
+            execute(next);
+        }
+    }
+
+    private void execute(Message msg) {
+        if (nextRecv == msg.getSeq()) {
+            synchronized (this) {
+                if (nextRecv == msg.getSeq()) {
+                    switch (Command.get(msg.getCmdCode())) {
+                        case open:
+                            log.info("代理【{}】发来会话【{}】建立命令", msg.getAgentServer(), appClient);
+                            SocketConfig conf = SocketConfig.getClientConfig(msg.getAppHost(), msg.getAppPort());
+                            SocketClient client = new SocketClient(appClient, conf, new ClientListener(manager, appClient));
+                            client.start();
+                            break;
+                        case data:
+                            chn.write(msg.getData());
+                            log.info("会话【{}】发送第【{}】条数据【{}】", appClient, msg.getSeq(), msg.getData().length);
+                            break;
+                        case close:
+                        case timeout:
+                            close();
+                            break;
+                        case openSuccess:
+                            connected = true;
+                            break;
+                        case openFail:
+                            connected = false;
+                            close();
+                            break;
+                        default:
+                            break;
                     }
                 }
-            } else {
-                receives.put(msg.getSeq(), msg);
+                nextRecvSeq();
             }
+        }
+        Message next = receives.remove(nextRecv);
+        if (next != null) {
+            execute(next);
         }
     }
 
@@ -112,12 +123,8 @@ public final class Session {
         this.connected = connSuccess;
     }
 
-    public boolean isConnected() {
+    boolean isConnected() {
         return this.connected;
-    }
-
-    public Object getLock() {
-        return lock;
     }
 
     void setChannel(ChannelHandlerContext chn) {

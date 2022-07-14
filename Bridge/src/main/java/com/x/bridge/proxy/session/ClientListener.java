@@ -5,7 +5,7 @@ package com.x.bridge.proxy.session;
  * @date 2022/7/12 14:41
  */
 
-import com.x.bridge.enums.Command;
+import com.x.bridge.proxy.command.core.Command;
 import com.x.bridge.netty.interfaces.ISessionListener;
 import com.x.bridge.util.ChannelHelper;
 import io.netty.buffer.ByteBuf;
@@ -44,7 +44,7 @@ public class ClientListener implements ISessionListener {
         if (session != null) {
             if (session.isConnected()) {
                 log.info("代理【{}】连接关闭【{}】,通知另一端代理关闭", sessionManager.name(), appClient);
-                session.closeConnect();
+                session.send(Command.close, null);
             } else {
                 log.info("代理【{}】连接关闭【{}】,无需通知另一端代理", sessionManager.name(), appClient);
             }
