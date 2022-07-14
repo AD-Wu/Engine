@@ -1,12 +1,14 @@
-package com.x.bridge.proxy.session;
+package com.x.bridge.socket.listener;
 
 /**
  * @author AD
  * @date 2022/7/12 14:54
  */
 
-import com.x.bridge.proxy.command.core.Command;
 import com.x.bridge.netty.interfaces.ISessionListener;
+import com.x.bridge.proxy.command.Command;
+import com.x.bridge.proxy.interfaces.IProxy;
+import com.x.bridge.session.Session;
 import com.x.bridge.util.ChannelHelper;
 import com.x.bridge.util.ChannelInfo;
 import io.netty.buffer.ByteBuf;
@@ -20,35 +22,36 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ServerListener implements ISessionListener {
 
-    private final SessionManager sessionManager;
+    private final IProxy proxy;
 
-    public ServerListener(SessionManager sessionManager) {
-        this.sessionManager = sessionManager;
+    public ServerListener(IProxy proxy) {
+        this.proxy = proxy;
     }
 
     @Override
     public void active(ChannelHandlerContext chn) throws Exception {
         ChannelInfo ci = ChannelHelper.getChannelInfo(chn);
-        if (sessionManager.isAccept(ci.getRemoteHost())) {
-            log.info("代理【{}】连接建立【{}】,同步连接中...", sessionManager.name(), ci.getRemote());
-            Session session = sessionManager.createSession(chn, ci.getRemote());
-            sessionManager.putSession(ci.getRemote(), session);
-            session.send(Command.open, null);
+        if (proxy.isAccept(ci.getRemoteHost())) {
+            log.info("代理【{}】连接建立【{}】,同步连接中...", proxy.name(), ci.getRemote());
+            Session session = new Session(ci.getRemote(), proxy);
+            session.setChannel(chn);
+            proxy.getSessionManager().putSession(ci.getRemote(), session);
+            session.sendToProxy(Command.open, null);
         } else {
-            log.warn("代理【{}】非法客户端连接【{}】", sessionManager.name(), ci.getRemote());
+            log.warn("代理【{}】非法客户端连接【{}】", proxy.name(), ci.getRemote());
         }
     }
 
     @Override
     public void inActive(ChannelHandlerContext chn) throws Exception {
         ChannelInfo ci = ChannelHelper.getChannelInfo(chn);
-        Session session = sessionManager.removeSession(ci.getRemote());
+        Session session = proxy.getSessionManager().removeSession(ci.getRemote());
         if (session != null) {
             if (session.isConnected()) {
-                log.info("代理【{}】连接关闭【{}】,通知另一端代理关闭", sessionManager.name(), ci.getRemote());
-                session.send(Command.close, null);
+                log.info("代理【{}】连接关闭【{}】,通知另一端代理关闭", proxy.name(), ci.getRemote());
+                session.sendToProxy(Command.close, null);
             } else {
-                log.info("代理【{}】连接关闭【{}】,无需通知另一端代理", sessionManager.name(), ci.getRemote());
+                log.info("代理【{}】连接关闭【{}】,无需通知另一端代理", proxy.name(), ci.getRemote());
             }
         }
     }
@@ -56,11 +59,11 @@ public class ServerListener implements ISessionListener {
     @Override
     public void receive(ChannelHandlerContext chn, ByteBuf buf) throws Exception {
         ChannelInfo ci = ChannelHelper.getChannelInfo(chn);
-        Session session = sessionManager.getSession(ci.getRemote());
+        Session session = proxy.getSessionManager().getSession(ci.getRemote());
         if (session != null) {
             byte[] data = ChannelHelper.readData(buf);
             if (data != null && data.length > 0) {
-                session.send(Command.data, data);
+                session.sendToProxy(Command.data, data);
             }
         }
     }

@@ -17,8 +17,6 @@ import io.netty.handler.timeout.IdleStateEvent;
  */
 public abstract class BaseSocket implements ISocket {
 
-    protected final String name;
-
     protected final SocketConfig config;
 
     protected final ISessionListener listener;
@@ -29,15 +27,9 @@ public abstract class BaseSocket implements ISocket {
 
     protected EventLoopGroup worker;
 
-    protected BaseSocket(String name, SocketConfig config, ISessionListener listener) {
-        this.name = name;
+    protected BaseSocket(SocketConfig config, ISessionListener listener) {
         this.config = config;
         this.listener = listener;
-    }
-
-    @Override
-    public String name() {
-        return name;
     }
 
     @Override

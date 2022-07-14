@@ -23,12 +23,12 @@ public class SocketServer extends BaseSocket {
 
     private EventLoopGroup boss;
 
-    public SocketServer(String name, int port, ISessionListener listener) {
-        this(name, SocketConfig.getServerConfig(port), listener);
+    public SocketServer(int port, ISessionListener listener) {
+        this(SocketConfig.getServerConfig(port), listener);
     }
 
-    public SocketServer(String name, SocketConfig conf, ISessionListener listener) {
-        super(name, conf, listener);
+    public SocketServer(SocketConfig conf, ISessionListener listener) {
+        super(conf, listener);
     }
 
     @Override

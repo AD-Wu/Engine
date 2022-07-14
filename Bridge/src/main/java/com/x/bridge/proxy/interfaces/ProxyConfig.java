@@ -1,46 +1,37 @@
-package com.x.bridge.proxy.data;
+package com.x.bridge.proxy.interfaces;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Set;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * 代理配置
  * @author AD
- * @date 2022/6/21 14:53
+ * @date 2022/7/14 16:48
  */
-
-public class AgentConfig {
-
+public class ProxyConfig {
     // ------------------------ 变量定义 ------------------------
-    private static String agentHost;
+    protected static String host;
 
     static {
         try {
-            agentHost = InetAddress.getLocalHost().getHostAddress();
+            host = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
     }
 
-    private String name;
-    private int agentPort;
-    private String appHost;
-    private int appPort;
-    private int connectTimeout;
-    private String writeMode;
-    private String readMode;
-    private Set<String> allowClients;
-
+    protected String name;
+    protected int connectTimeout;
+    protected String writeMode;
+    protected String readMode;
     // ------------------------ 构造方法 ------------------------
-    public AgentConfig() {}
+    public ProxyConfig() {}
     // ------------------------ 方法定义 ------------------------
 
 
-    public static String getAgentHost() {
-        return agentHost;
+    public static String getHost() {
+        return host;
     }
 
     public String getName() {
@@ -49,30 +40,6 @@ public class AgentConfig {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getAgentPort() {
-        return agentPort;
-    }
-
-    public void setAgentPort(int agentPort) {
-        this.agentPort = agentPort;
-    }
-
-    public String getAppHost() {
-        return appHost;
-    }
-
-    public void setAppHost(String appHost) {
-        this.appHost = appHost;
-    }
-
-    public int getAppPort() {
-        return appPort;
-    }
-
-    public void setAppPort(int appPort) {
-        this.appPort = appPort;
     }
 
     public int getConnectTimeout() {
@@ -97,14 +64,6 @@ public class AgentConfig {
 
     public void setReadMode(String readMode) {
         this.readMode = readMode;
-    }
-
-    public Set<String> getAllowClients() {
-        return allowClients;
-    }
-
-    public void setAllowClients(Set<String> allowClients) {
-        this.allowClients = allowClients;
     }
 
     @Override

@@ -25,8 +25,8 @@ import java.util.concurrent.TimeUnit;
 @Log4j2
 public class SocketClient extends BaseSocket {
 
-    public SocketClient(String name, SocketConfig conf, ISessionListener listener) {
-        super(name, conf, listener);
+    public SocketClient(SocketConfig conf, ISessionListener listener) {
+        super(conf, listener);
     }
 
     @Override
