@@ -1,4 +1,4 @@
-package com.x.bridge.socket.listener;
+package com.x.bridge.proxy.client;
 
 /**
  * @author AD
@@ -7,7 +7,7 @@ package com.x.bridge.socket.listener;
 
 import com.x.bridge.netty.interfaces.ISessionListener;
 import com.x.bridge.proxy.command.Command;
-import com.x.bridge.proxy.interfaces.IProxy;
+import com.x.bridge.proxy.core.IProxy;
 import com.x.bridge.session.Session;
 import com.x.bridge.util.ChannelHelper;
 import io.netty.buffer.ByteBuf;
@@ -36,7 +36,7 @@ public class ClientListener implements ISessionListener {
         Session session = proxy.getSessionManager().getSession(appClient);
         session.setChannel(chn);
         session.setConnected(true);
-        session.sendToProxy(Command.openSuccess, null);
+        session.sendToProxy(Command.openSuccess.code, null);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ClientListener implements ISessionListener {
         if (session != null) {
             if (session.isConnected()) {
                 log.info("代理【{}】连接关闭【{}】,通知另一端代理关闭", proxy.name(), appClient);
-                session.sendToProxy(Command.close, null);
+                session.sendToProxy(Command.close.code, null);
             } else {
                 log.info("代理【{}】连接关闭【{}】,无需通知另一端代理", proxy.name(), appClient);
             }
@@ -58,7 +58,7 @@ public class ClientListener implements ISessionListener {
         Session session = proxy.getSessionManager().getSession(appClient);
         if (session != null) {
             byte[] data = ChannelHelper.readData(buf);
-            session.sendToProxy(Command.data, data);
+            session.sendToProxy(Command.data.code, data);
         }
     }
 
@@ -66,7 +66,7 @@ public class ClientListener implements ISessionListener {
     public void timeout(ChannelHandlerContext chn, IdleStateEvent event) throws Exception {
         Session session = proxy.getSessionManager().removeSession(appClient);
         if (session != null) {
-            session.sendToProxy(Command.timeout, null);
+            session.sendToProxy(Command.timeout.code, null);
             session.close();
             log.info("连接超时:【{}】", appClient);
         }
@@ -76,7 +76,7 @@ public class ClientListener implements ISessionListener {
     public void error(ChannelHandlerContext chn, Throwable cause) throws Exception {
         Session session = proxy.getSessionManager().removeSession(appClient);
         if (session != null) {
-            session.sendToProxy(Command.openFail, null);
+            session.sendToProxy(Command.openFail.code, null);
             session.close();
             log.info("连接错误:【{}】", appClient);
         }

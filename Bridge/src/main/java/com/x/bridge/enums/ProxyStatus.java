@@ -8,6 +8,8 @@ package com.x.bridge.enums;
 public enum ProxyStatus {
     sync,
     running,
-    exception,
-    stopped;
+    stopped,
+    socketServerError,
+    sessionError,
+    transportError;
 }

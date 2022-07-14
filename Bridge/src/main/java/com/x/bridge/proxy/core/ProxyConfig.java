@@ -1,4 +1,4 @@
-package com.x.bridge.proxy.interfaces;
+package com.x.bridge.proxy.core;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -10,21 +10,15 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @date 2022/7/14 16:48
  */
 public class ProxyConfig {
-    // ------------------------ 变量定义 ------------------------
+
+    // ------------------------ 静态变量------------------------
     protected static String host;
-
-    static {
-        try {
-            host = InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-    }
-
+    // ------------------------ 变量定义 ------------------------
     protected String name;
     protected int connectTimeout;
     protected String writeMode;
     protected String readMode;
+
     // ------------------------ 构造方法 ------------------------
     public ProxyConfig() {}
     // ------------------------ 方法定义 ------------------------
@@ -64,6 +58,14 @@ public class ProxyConfig {
 
     public void setReadMode(String readMode) {
         this.readMode = readMode;
+    }
+
+    static {
+        try {
+            host = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

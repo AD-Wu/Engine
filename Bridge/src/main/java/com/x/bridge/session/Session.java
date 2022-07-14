@@ -1,13 +1,14 @@
 package com.x.bridge.session;
 
 import com.x.bridge.bean.Message;
+import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.proxy.command.Command;
 import com.x.bridge.proxy.command.ICommand;
-import com.x.bridge.proxy.interfaces.IProxy;
+import com.x.bridge.proxy.core.IProxy;
+import com.x.doraemon.Strings;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.annotation.Nonnull;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -40,11 +41,23 @@ public class Session {
         resetRecvSeq();
     }
 
-    public void sendToProxy(@Nonnull Command cmd, byte[] data) {
-        Message msg = buildMessage(cmd, data, nextSendSeq());
+    public void sendToProxy(int cmd, byte[] data) {
+        if (ProxyStatus.running == proxy.status()) {
+            Message msg = buildMessage(cmd, data);
+            try {
+                proxy.getTransportEngine().write(msg);
+            } catch (Exception e) {
+                proxy.status(ProxyStatus.transportError);
+                e.printStackTrace();
+                log.error("写入数据失败,异常原因:{}", Strings.getExceptionTrace(e));
+            }
+        } else {
+            log.error("写入数据失败,当前代理状态【{}】", proxy.status());
+        }
+
     }
 
-    public void sendToTarget(byte[] data) {
+    public void sendToApp(byte[] data) {
         chn.write(data);
     }
 
@@ -88,7 +101,7 @@ public class Session {
         if (nextRecv == msg.getSeq()) {
             synchronized (this) {
                 if (nextRecv == msg.getSeq()) {
-                    ICommand cmd = Command.get(msg.getCmdCode());
+                    ICommand cmd = Command.get(msg.getCmd());
                     cmd.execute(msg, this, proxy);
                 }
                 nextRecvSeq();
@@ -100,17 +113,15 @@ public class Session {
         }
     }
 
-    private Message buildMessage(Command cmd, byte[] data, long seq) {
+    private Message buildMessage(int cmd, byte[] data) {
+        if (Command.get(cmd) == null) {
+            throw new RuntimeException("非法命令【" + cmd + "】");
+        }
         Message msg = new Message();
-        msg.setSeq(seq);
-        msg.setCmdCode(cmd.code);
+        msg.setSeq(nextSendSeq());
+        msg.setCmd(cmd);
         msg.setData(data);
         msg.setAppClient(appClient);
-
-        // AgentConfig conf = manager.getAgentConfig();
-        // msg.setAppHost(conf.getAppHost());
-        // msg.setAppPort(conf.getAppPort());
-        // msg.setAgentServer(AgentConfig.getAgentHost() + conf.getAgentPort());
         return msg;
     }
 

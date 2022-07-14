@@ -1,6 +1,7 @@
 package com.x.bridge.session;
 
 import com.x.bridge.bean.Message;
+import com.x.bridge.proxy.core.IProxy;
 import com.x.doraemon.therad.BalanceExecutor;
 import java.util.Arrays;
 import java.util.List;
@@ -16,20 +17,19 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class SessionManager implements ISessionManager {
 
-    private Map<String, Session> sessions = new ConcurrentHashMap<>();
+    private final Map<String, Session> sessions = new ConcurrentHashMap<>();
 
-    private String name;
+    private final IProxy proxy;
 
     private BalanceExecutor<String> executor;
 
-    public SessionManager(String name) {
-        this.name = name;
-
+    public SessionManager(IProxy proxy) {
+        this.proxy = proxy;
     }
 
     @Override
     public String name() {
-        return name;
+        return proxy.name();
     }
 
     @Override
@@ -61,7 +61,7 @@ public class SessionManager implements ISessionManager {
 
     @Override
     public boolean start() {
-        executor = new BalanceExecutor<>(name);
+        executor = new BalanceExecutor<>(name());
         return true;
     }
 
@@ -76,15 +76,24 @@ public class SessionManager implements ISessionManager {
         groups.entrySet().stream().forEach(e -> {
             String client = e.getKey();
             List<Message> msg = e.getValue();
-            Session session = getSession(client);
-            if (session != null) {
-                executor.execute(client, new Runnable() {
-                    @Override
-                    public void run() {
+            if (!existSession(client)) {
+                if (!proxy.isServerMode()) {
+                    synchronized (this) {
+                        if (!existSession(client)) {
+                            putSession(client, new Session(client, proxy));
+                        }
+                    }
+                }
+            }
+            executor.execute(client, new Runnable() {
+                @Override
+                public void run() {
+                    Session session = getSession(client);
+                    if (session != null) {
                         session.receive(msg.toArray(new Message[0]));
                     }
-                });
-            }
+                }
+            });
         });
     }
 

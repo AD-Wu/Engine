@@ -1,9 +1,9 @@
-package com.x.bridge.proxy.interfaces;
+package com.x.bridge.proxy.server;
 
 import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.netty.factory.SocketServer;
 import com.x.bridge.netty.interfaces.ISocket;
-import com.x.bridge.socket.listener.ServerListener;
+import com.x.bridge.proxy.core.Proxy;
 import java.util.Set;
 import lombok.extern.log4j.Log4j2;
 
@@ -41,15 +41,19 @@ public class ProxyServer extends Proxy {
                 log.info("socket服务器启动成功,端口【{}】", conf.getPort());
                 if (sessions.start()) {
                     log.info("会话管理启动成功");
+                    status = ProxyStatus.running;
                     return true;
                 } else {
                     log.info("会话管理启动失败");
+                    status = ProxyStatus.sessionError;
                 }
             } else {
                 log.info("socket服务器启动失败");
+                status = ProxyStatus.socketServerError;
             }
         } else {
             log.error("传输引擎启动失败");
+            status = ProxyStatus.transportError;
         }
         return false;
     }

@@ -1,5 +1,6 @@
-package com.x.bridge.proxy.interfaces;
+package com.x.bridge.proxy.server;
 
+import com.x.bridge.proxy.core.ProxyConfig;
 import java.util.Set;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;

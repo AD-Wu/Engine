@@ -3,9 +3,9 @@ package com.x.bridge.proxy.command;
 import com.x.bridge.bean.Message;
 import com.x.bridge.netty.core.SocketConfig;
 import com.x.bridge.netty.factory.SocketClient;
-import com.x.bridge.proxy.interfaces.IProxy;
+import com.x.bridge.proxy.core.IProxy;
 import com.x.bridge.session.Session;
-import com.x.bridge.socket.listener.ClientListener;
+import com.x.bridge.proxy.client.ClientListener;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.log4j.Log4j2;
@@ -20,7 +20,7 @@ public enum Command implements ICommand {
     open(1) {
         @Override
         public void execute(Message msg, Session session, IProxy proxy) {
-            log.info("代理【{}】发来会话【{}】建立命令", msg.getAgentServer(), msg.getAppClient());
+            log.info("代理【{}】发来会话【{}】建立命令", msg.getProxyServer(), msg.getAppClient());
             String appClient = msg.getAppClient();
             SocketConfig conf = SocketConfig.getClientConfig(msg.getAppHost(), msg.getAppPort());
             SocketClient client = new SocketClient(conf, new ClientListener(appClient, proxy));
@@ -30,7 +30,7 @@ public enum Command implements ICommand {
     data(2) {
         @Override
         public void execute(Message msg, Session session, IProxy proxy) {
-            session.sendToTarget(msg.getData());
+            session.sendToApp(msg.getData());
         }
     },
     close(3) {

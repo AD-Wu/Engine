@@ -1,7 +1,7 @@
 package com.x.bridge.proxy.command;
 
 import com.x.bridge.bean.Message;
-import com.x.bridge.proxy.interfaces.IProxy;
+import com.x.bridge.proxy.core.IProxy;
 import com.x.bridge.session.Session;
 
 /**

@@ -1,4 +1,4 @@
-package com.x.bridge.socket.listener;
+package com.x.bridge.proxy.server;
 
 /**
  * @author AD
@@ -7,7 +7,7 @@ package com.x.bridge.socket.listener;
 
 import com.x.bridge.netty.interfaces.ISessionListener;
 import com.x.bridge.proxy.command.Command;
-import com.x.bridge.proxy.interfaces.IProxy;
+import com.x.bridge.proxy.core.IProxy;
 import com.x.bridge.session.Session;
 import com.x.bridge.util.ChannelHelper;
 import com.x.bridge.util.ChannelInfo;
@@ -36,7 +36,7 @@ public class ServerListener implements ISessionListener {
             Session session = new Session(ci.getRemote(), proxy);
             session.setChannel(chn);
             proxy.getSessionManager().putSession(ci.getRemote(), session);
-            session.sendToProxy(Command.open, null);
+            session.sendToProxy(Command.open.code, null);
         } else {
             log.warn("代理【{}】非法客户端连接【{}】", proxy.name(), ci.getRemote());
         }
@@ -49,7 +49,7 @@ public class ServerListener implements ISessionListener {
         if (session != null) {
             if (session.isConnected()) {
                 log.info("代理【{}】连接关闭【{}】,通知另一端代理关闭", proxy.name(), ci.getRemote());
-                session.sendToProxy(Command.close, null);
+                session.sendToProxy(Command.close.code, null);
             } else {
                 log.info("代理【{}】连接关闭【{}】,无需通知另一端代理", proxy.name(), ci.getRemote());
             }
@@ -63,7 +63,7 @@ public class ServerListener implements ISessionListener {
         if (session != null) {
             byte[] data = ChannelHelper.readData(buf);
             if (data != null && data.length > 0) {
-                session.sendToProxy(Command.data, data);
+                session.sendToProxy(Command.data.code, data);
             }
         }
     }

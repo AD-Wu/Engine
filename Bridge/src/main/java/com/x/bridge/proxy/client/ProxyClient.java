@@ -1,8 +1,8 @@
-package com.x.bridge.proxy.interfaces;
+package com.x.bridge.proxy.client;
 
 import com.x.bridge.enums.ProxyStatus;
-import com.x.bridge.session.ISessionManager;
-import com.x.bridge.transport.interfaces.ITransportEngine;
+import com.x.bridge.proxy.core.Proxy;
+import com.x.bridge.proxy.core.ProxyConfig;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -12,19 +12,10 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ProxyClient extends Proxy {
 
-    private String name;
-    private ProxyConfig conf;
-    private ITransportEngine transporter;
-    private ISessionManager sessions;
-
     public ProxyClient(String name, ProxyConfig conf) {
-       super(name,conf);
+        super(name, conf);
     }
 
-    @Override
-    public ProxyStatus status() {
-        return null;
-    }
 
     @Override
     public boolean start() {
@@ -32,12 +23,15 @@ public class ProxyClient extends Proxy {
             log.info("传输引擎启动成功");
             if (sessions.start()) {
                 log.info("会话管理启动成功");
+                status = ProxyStatus.running;
                 return true;
             } else {
                 log.info("会话管理启动失败");
+                status = ProxyStatus.sessionError;
             }
         } else {
             log.error("传输引擎启动失败");
+            status = ProxyStatus.transportError;
         }
         return false;
     }

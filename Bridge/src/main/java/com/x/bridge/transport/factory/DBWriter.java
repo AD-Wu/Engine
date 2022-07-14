@@ -1,7 +1,8 @@
 package com.x.bridge.transport.factory;
 
 import com.x.bridge.bean.Message;
-import com.x.bridge.transport.interfaces.IWriter;
+import com.x.bridge.proxy.core.IProxy;
+import com.x.bridge.transport.core.IWriter;
 import com.x.bridge.transport.mode.db.client.ClientWriteActor;
 import com.x.bridge.transport.mode.db.client.IClientWriteActor;
 import com.x.bridge.transport.mode.db.server.IServerWriteActor;
@@ -13,23 +14,23 @@ import java.util.Arrays;
  * @author AD
  * @date 2022/6/25 13:05
  */
-public class DBWriter implements IWriter<Message> {
+public class DBWriter implements IWriter {
 
     private IServerWriteActor serverWriter;
     private IClientWriteActor clientWriter;
-    private boolean serverMode;
+    private IProxy proxy;
 
-    public DBWriter(boolean serverMode) {
-        this.serverMode = serverMode;
+    public DBWriter(IProxy proxy) {
+        this.proxy = proxy;
         this.serverWriter = new ServerWriteActor();
         this.clientWriter = new ClientWriteActor();
 
     }
 
     @Override
-    public void write(Message... msgs) throws Exception{
+    public void write(Message... msgs) throws Exception {
         if (msgs != null || msgs.length > 0) {
-            if (serverMode) {
+            if (proxy.isServerMode()) {
                 serverWriter.saveBatch(Arrays.asList(msgs));
             } else {
                 clientWriter.saveBatch(Arrays.asList(msgs));

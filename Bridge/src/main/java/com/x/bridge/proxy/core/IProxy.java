@@ -1,9 +1,9 @@
-package com.x.bridge.proxy.interfaces;
+package com.x.bridge.proxy.core;
 
 import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.interfaces.IService;
 import com.x.bridge.session.ISessionManager;
-import com.x.bridge.transport.interfaces.ITransportEngine;
+import com.x.bridge.transport.core.ITransportEngine;
 
 /**
  * 代理服务器接口
@@ -25,6 +25,8 @@ public interface IProxy extends IService {
     ITransportEngine getTransportEngine();
 
     ProxyStatus status();
+
+    void status(ProxyStatus status);
 
     ProxyConfig getConfig();
 

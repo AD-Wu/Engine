@@ -9,16 +9,12 @@ import java.io.Serializable;
  */
 public class Message implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -1L;
+
     /**
      * 主键
      */
     private long id;
-
-    /**
-     * 应用客户端地址
-     */
-    private String appClient;
 
     /**
      * 应用服务器Host
@@ -33,12 +29,17 @@ public class Message implements Serializable {
     /**
      * 代理服务器地址
      */
-    private String agentServer;
+    private String proxyServer;
+
+    /**
+     * 应用客户端地址
+     */
+    private String appClient;
 
     /**
      * 命令
      */
-    private int cmdCode;
+    private int cmd;
 
     /**
      * 传输序号
@@ -60,14 +61,6 @@ public class Message implements Serializable {
         this.id = id;
     }
 
-    public String getAppClient() {
-        return appClient;
-    }
-
-    public void setAppClient(String appClient) {
-        this.appClient = appClient;
-    }
-
     public String getAppHost() {
         return appHost;
     }
@@ -84,20 +77,28 @@ public class Message implements Serializable {
         this.appPort = appPort;
     }
 
-    public String getAgentServer() {
-        return agentServer;
+    public String getProxyServer() {
+        return proxyServer;
     }
 
-    public void setAgentServer(String agentServer) {
-        this.agentServer = agentServer;
+    public void setProxyServer(String proxyServer) {
+        this.proxyServer = proxyServer;
     }
 
-    public int getCmdCode() {
-        return cmdCode;
+    public String getAppClient() {
+        return appClient;
     }
 
-    public void setCmdCode(int cmd) {
-        this.cmdCode = cmd;
+    public void setAppClient(String appClient) {
+        this.appClient = appClient;
+    }
+
+    public int getCmd() {
+        return cmd;
+    }
+
+    public void setCmd(int cmd) {
+        this.cmd = cmd;
     }
 
     public long getSeq() {
