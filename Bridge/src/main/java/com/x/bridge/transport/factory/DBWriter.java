@@ -71,6 +71,7 @@ public class DBWriter implements IWriter {
             while (!queue.isEmpty() && (sumBytes = getSumBytes(sumBytes)) <= maxBytes) {
                 msgs.add(queue.poll());
             }
+            log.info("字节总数【{}】",sumBytes);
         }
         return msgs;
     }
