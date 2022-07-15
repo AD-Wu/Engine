@@ -32,7 +32,7 @@ public class SocketServer extends BaseSocket {
     }
 
     @Override
-    protected void run() throws Exception {
+    protected void onStart() throws Exception {
         ServerBootstrap boot = new ServerBootstrap();
         boot.channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -64,7 +64,7 @@ public class SocketServer extends BaseSocket {
     }
 
     @Override
-    protected void shutdown() {
+    protected void onStop() {
         if (boss != null) {
             boss.shutdownGracefully();
         }

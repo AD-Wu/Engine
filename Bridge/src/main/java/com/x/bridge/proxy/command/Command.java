@@ -5,7 +5,7 @@ import com.x.bridge.netty.core.SocketConfig;
 import com.x.bridge.netty.factory.SocketClient;
 import com.x.bridge.proxy.core.IProxy;
 import com.x.bridge.session.Session;
-import com.x.bridge.proxy.client.ClientListener;
+import com.x.bridge.proxy.client.SocketClientListener;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.log4j.Log4j2;
@@ -23,7 +23,7 @@ public enum Command implements ICommand {
             log.info("代理【{}】发来会话【{}】建立命令", msg.getProxyServer(), msg.getAppClient());
             String appClient = msg.getAppClient();
             SocketConfig conf = SocketConfig.getClientConfig(msg.getAppHost(), msg.getAppPort());
-            SocketClient client = new SocketClient(conf, new ClientListener(appClient, proxy));
+            SocketClient client = new SocketClient(conf, new SocketClientListener(appClient, proxy));
             client.start();
         }
     },

@@ -19,13 +19,13 @@ import lombok.extern.log4j.Log4j2;
  * 代理客户端监听器
  */
 @Log4j2
-public class ClientListener implements ISessionListener {
+public class SocketClientListener implements ISessionListener {
 
     private final String appClient;
 
     private final IProxy proxy;
 
-    public ClientListener(String appClient, IProxy proxy) {
+    public SocketClientListener(String appClient, IProxy proxy) {
         this.appClient = appClient;
         this.proxy = proxy;
     }

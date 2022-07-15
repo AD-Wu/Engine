@@ -1,5 +1,6 @@
 package com.x.bridge.session;
 
+import com.google.common.base.Objects;
 import com.x.bridge.bean.Message;
 import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.proxy.command.Command;
@@ -145,5 +146,22 @@ public class Session {
 
     private void resetRecvSeq() {
         this.nextRecv = 1;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Session session = (Session) o;
+        return Objects.equal(appClient, session.appClient);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(appClient);
     }
 }

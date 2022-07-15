@@ -19,7 +19,7 @@ public class ProxyServer extends Proxy {
 
     public ProxyServer(String name, ProxyServerConfig conf) {
         super(name, conf);
-        this.server = new SocketServer(conf.getPort(), new ServerListener(this));
+        this.server = new SocketServer(conf.getPort(), new SocketServerListener(this));
     }
 
     @Override

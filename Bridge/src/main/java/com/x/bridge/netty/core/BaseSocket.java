@@ -21,7 +21,7 @@ public abstract class BaseSocket implements ISocket {
 
     protected final ISessionListener listener;
 
-    protected boolean running = false;
+    protected volatile boolean running = false;
 
     protected Channel channel;
 
@@ -33,11 +33,11 @@ public abstract class BaseSocket implements ISocket {
     }
 
     @Override
-    public final synchronized boolean start() {
+    public final boolean start() {
         if (!running) {
             try {
-                run();
                 running = true;
+                onStart();
             } catch (Exception e) {
                 e.printStackTrace();
                 stop();
@@ -47,7 +47,7 @@ public abstract class BaseSocket implements ISocket {
     }
 
     @Override
-    public final synchronized void stop() {
+    public final void stop() {
         if (running) {
             if (channel != null) {
                 channel.close();
@@ -55,14 +55,18 @@ public abstract class BaseSocket implements ISocket {
             if (worker != null) {
                 worker.shutdownGracefully();
             }
-            shutdown();
+            try {
+                onStop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             running = false;
         }
     }
 
-    protected abstract void run() throws Exception;
+    protected abstract void onStart() throws Exception;
 
-    protected void shutdown() {}
+    protected void onStop() throws Exception{}
 
     /**
      * socket 通道处理器

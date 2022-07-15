@@ -30,7 +30,7 @@ public class SocketClient extends BaseSocket {
     }
 
     @Override
-    public void run() throws Exception {
+    protected void onStart() throws Exception {
         worker = new NioEventLoopGroup(1);
         Bootstrap boot = new Bootstrap();
         boot.group(worker);

@@ -1,4 +1,4 @@
-package com.x.bridge.proxy.core;
+package com.x.bridge.transport.core;
 
 /**
  * @author AD

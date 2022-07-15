@@ -2,7 +2,7 @@ package com.x.bridge.session;
 
 import com.x.bridge.bean.Message;
 import com.x.bridge.interfaces.IService;
-import com.x.bridge.proxy.core.IReceiver;
+import com.x.bridge.transport.core.IReceiver;
 
 /**
  * @author AD

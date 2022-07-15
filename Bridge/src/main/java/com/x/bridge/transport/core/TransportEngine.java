@@ -3,7 +3,6 @@ package com.x.bridge.transport.core;
 import com.x.bridge.bean.Message;
 import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.proxy.core.IProxy;
-import com.x.bridge.proxy.core.IReceiver;
 import com.x.doraemon.Strings;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,7 +40,7 @@ public class TransportEngine implements ITransportEngine {
                 } catch (Exception e) {
                     proxy.status(ProxyStatus.transportError);
                     e.printStackTrace();
-                    log.error("传输引擎启动异常:{}", Strings.getExceptionTrace(e));
+                    log.error("传输引擎执行读取异常:{}", Strings.getExceptionTrace(e));
                 }
             }
         }, 0, 0, TimeUnit.MILLISECONDS);
