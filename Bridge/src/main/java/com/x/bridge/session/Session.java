@@ -2,7 +2,6 @@ package com.x.bridge.session;
 
 import com.google.common.base.Objects;
 import com.x.bridge.bean.Message;
-import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.proxy.command.Command;
 import com.x.bridge.proxy.command.ICommand;
 import com.x.bridge.proxy.core.IProxy;
@@ -43,19 +42,13 @@ public class Session {
     }
 
     public void sendToProxy(int cmd, byte[] data) {
-        if (ProxyStatus.running == proxy.status()) {
-            Message msg = buildMessage(cmd, data);
-            try {
-                proxy.getTransportEngine().write(msg);
-            } catch (Exception e) {
-                proxy.status(ProxyStatus.transportError);
-                e.printStackTrace();
-                log.error("写入数据失败,异常原因:{}", Strings.getExceptionTrace(e));
-            }
-        } else {
-            log.error("写入数据失败,当前代理状态【{}】", proxy.status());
+        Message msg = buildMessage(cmd, data);
+        try {
+            proxy.getTransportEngine().write(msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("写入数据失败,异常原因:{}", Strings.getExceptionTrace(e));
         }
-
     }
 
     public void sendToApp(byte[] data) {

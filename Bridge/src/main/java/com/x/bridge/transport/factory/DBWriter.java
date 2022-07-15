@@ -8,8 +8,7 @@ import com.x.bridge.transport.mode.db.client.IClientWriteActor;
 import com.x.bridge.transport.mode.db.server.IServerWriteActor;
 import com.x.bridge.transport.mode.db.server.ServerWriteActor;
 import com.x.doraemon.therad.BalanceExecutor;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import lombok.extern.log4j.Log4j2;
@@ -22,7 +21,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class DBWriter implements IWriter {
 
-    private static final int maxBytes = 70000;
+
     private IProxy proxy;
     private IServerWriteActor serverWriter = new ServerWriteActor();
     private IClientWriteActor clientWriter = new ClientWriteActor();
@@ -38,47 +37,13 @@ public class DBWriter implements IWriter {
     @Override
     public void write(Message... msgs) throws Exception {
         if (msgs != null || msgs.length > 0) {
-            for (int i = 0, c = msgs.length; i < c; i++) {
-                queue.add(msgs[i]);
-            }
-        }
-        writer.execute(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    dynamicWrite();
-                }
-            }
-        });
-    }
-
-    private void dynamicWrite() {
-        List<Message> msgs = getMessages();
-        if (msgs.size() > 0) {
-            log.info("即将写入数据【{}】条", msgs.size());
+            log.info("即将写入数据【{}】条", msgs.length);
             if (proxy.isServerMode()) {
-                serverWriter.saveBatch(msgs);
+                serverWriter.saveBatch(Arrays.asList(msgs));
             } else {
-                clientWriter.saveBatch(msgs);
+                clientWriter.saveBatch(Arrays.asList(msgs));
             }
         }
-    }
-
-    private List<Message> getMessages() {
-        List<Message> msgs = new ArrayList<>();
-        if (!queue.isEmpty()) {
-            int sumBytes = 0;
-            while (!queue.isEmpty() && (sumBytes = getSumBytes(sumBytes)) <= maxBytes) {
-                msgs.add(queue.poll());
-            }
-            log.info("字节总数【{}】",sumBytes);
-        }
-        return msgs;
-    }
-
-    private int getSumBytes(int sumBytes) {
-        byte[] data = queue.peek().getData();
-        return data == null ? sumBytes : sumBytes + data.length;
     }
 
 }

@@ -45,16 +45,14 @@ public class ProxyServer extends Proxy {
                     return true;
                 } else {
                     log.info("会话管理启动失败");
-                    status = ProxyStatus.sessionError;
                 }
             } else {
                 log.info("socket服务器启动失败");
-                status = ProxyStatus.socketServerError;
             }
         } else {
             log.error("传输引擎启动失败");
-            status = ProxyStatus.transportError;
         }
+        status = ProxyStatus.error;
         return false;
     }
 

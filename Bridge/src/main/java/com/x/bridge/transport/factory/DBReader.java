@@ -49,13 +49,13 @@ public class DBReader implements IReader {
         try {
             List<Message> msgs = reader.list(query);
             counter.increment();
-            if (counter.intValue() > Limit.high.ordinal()) {
+            if (counter.intValue() > LimitLevel.high.ordinal()) {
                 counter.decrement();
             }
             return msgs.toArray(new Message[0]);
         } catch (Exception e) {
             counter.decrement();
-            if (counter.intValue() < Limit.low.ordinal()) {
+            if (counter.intValue() < LimitLevel.low.ordinal()) {
                 counter.reset();
                 throw e;
             } else {
@@ -66,24 +66,24 @@ public class DBReader implements IReader {
     }
 
     private int getLimit(int count) {
-        Limit next = Limit.next(count);
+        LimitLevel next = LimitLevel.next(count);
         return next.limit;
     }
 
-    private enum Limit {
+    private enum LimitLevel {
         low(10),
         mediumLow(32),
         medium(64),
         mediumHigh(128),
         high(256);
 
-        public static Limit next(int ordinal) {
+        public static LimitLevel next(int ordinal) {
             if (ordinal > high.ordinal()) {
                 return high;
             } else if (ordinal < low.ordinal()) {
                 return low;
             } else {
-                for (Limit limit : values()) {
+                for (LimitLevel limit : values()) {
                     if (limit.ordinal() == ordinal) {
                         return limit;
                     }
@@ -94,7 +94,7 @@ public class DBReader implements IReader {
 
         private final int limit;
 
-        private Limit(int limit) {
+        private LimitLevel(int limit) {
             this.limit = limit;
         }
     }

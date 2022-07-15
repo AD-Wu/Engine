@@ -1,6 +1,7 @@
 package com.x.bridge.proxy.core;
 
 import com.x.bridge.enums.ProxyStatus;
+import com.x.bridge.enums.TransportEngineStatus;
 import com.x.bridge.enums.TransportMode;
 import com.x.bridge.session.ISessionManager;
 import com.x.bridge.session.SessionManager;
@@ -41,6 +42,11 @@ public abstract class Proxy implements IProxy {
     @Override
     public ProxyStatus status() {
         return status;
+    }
+
+    @Override
+    public TransportEngineStatus transportStatus() {
+        return transporter.status();
     }
 
     @Override

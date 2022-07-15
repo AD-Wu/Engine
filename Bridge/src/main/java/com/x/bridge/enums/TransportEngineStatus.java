@@ -1,12 +1,10 @@
 package com.x.bridge.enums;
 
 /**
- * 代理状态
  * @author AD
- * @date 2022/6/22 22:13
+ * @date 2022/7/15 16:04
  */
-public enum ProxyStatus {
-    sync,
+public enum TransportEngineStatus {
     running,
     stopped,
     error;
