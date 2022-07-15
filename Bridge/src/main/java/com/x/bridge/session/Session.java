@@ -44,7 +44,7 @@ public class Session {
     public void sendToProxy(int cmd, byte[] data) {
         Message msg = buildMessage(cmd, data);
         try {
-            proxy.getTransportEngine().write(msg);
+            proxy.getTransporter().write(msg);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("写入数据失败,异常原因:{}", Strings.getExceptionTrace(e));

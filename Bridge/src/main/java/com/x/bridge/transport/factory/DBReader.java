@@ -9,8 +9,11 @@ import com.x.bridge.transport.mode.db.client.ClientWriteActor;
 import com.x.bridge.transport.mode.db.client.IClientWriteActor;
 import com.x.bridge.transport.mode.db.server.IServerWriteActor;
 import com.x.bridge.transport.mode.db.server.ServerWriteActor;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.LongAdder;
+import java.util.stream.Collectors;
 
 /**
  * @author AD
@@ -35,9 +38,15 @@ public class DBReader implements IReader {
     public Message[] read() throws Exception {
         // 服务器模式
         if (proxy.isServerMode()) {
-            return dynamicQuery(serverReader);
+            Message[] msgs = dynamicQuery(serverReader);
+            Set<Long> ids = Arrays.stream(msgs).map(m -> m.getId()).collect(Collectors.toSet());
+            serverReader.removeBatchByIds(ids);
+            return msgs;
         } else {
-            return dynamicQuery(clientReader);
+            Message[] msgs = dynamicQuery(clientReader);
+            Set<Long> ids = Arrays.stream(msgs).map(m -> m.getId()).collect(Collectors.toSet());
+            clientReader.removeBatchByIds(ids);
+            return msgs;
         }
     }
 

@@ -116,4 +116,5 @@ public class Message implements Serializable {
     public void setData(byte[] data) {
         this.data = data;
     }
+
 }

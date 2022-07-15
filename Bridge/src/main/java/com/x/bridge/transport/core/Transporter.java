@@ -2,7 +2,7 @@ package com.x.bridge.transport.core;
 
 import com.x.bridge.bean.Message;
 
-import com.x.bridge.enums.TransportEngineStatus;
+import com.x.bridge.enums.TransporterStatus;
 
 import com.x.bridge.proxy.core.IProxy;
 import com.x.doraemon.Strings;
@@ -21,23 +21,23 @@ import lombok.extern.log4j.Log4j2;
  * @date 2022/7/11 19:52
  */
 @Log4j2
-public class TransportEngine implements ITransportEngine {
+public class Transporter implements ITransporter {
 
     private static final int maxBytes = 70000;
     private final IProxy proxy;
     private final IReader reader;
     private final IWriter writer;
-    protected volatile TransportEngineStatus status;
+    protected volatile TransporterStatus status;
 
     private final ScheduledExecutorService readerExecutor = Executors.newScheduledThreadPool(1);
     private final ExecutorService writerExecutor = new BalanceExecutor<String>("Writer", 1);
     private final ArrayBlockingQueue<Message> writeQueue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
 
-    public TransportEngine(IProxy proxy, IReader reader, IWriter writer) {
+    public Transporter(IProxy proxy, IReader reader, IWriter writer) {
         this.proxy = proxy;
         this.reader = reader;
         this.writer = writer;
-        this.status = TransportEngineStatus.stopped;
+        this.status = TransporterStatus.stopped;
     }
 
     @Override
@@ -47,13 +47,13 @@ public class TransportEngine implements ITransportEngine {
             public void run() {
                 try {
                     Message[] msgs = reader.read();
-                    status = TransportEngineStatus.running;
+                    status = TransporterStatus.running;
                     IReceiver receiver = getReceiver();
                     if (receiver != null) {
                         receiver.receive(msgs);
                     }
                 } catch (Exception e) {
-                    status = TransportEngineStatus.error;
+                    status = TransporterStatus.error;
                     e.printStackTrace();
                     log.error("传输引擎执行读取异常:{}", Strings.getExceptionTrace(e));
                 }
@@ -64,12 +64,12 @@ public class TransportEngine implements ITransportEngine {
             @Override
             public void run() {
                 while (true) {
-                    if (status == TransportEngineStatus.running) {
+                    if (status == TransporterStatus.running) {
                         try {
                             Message[] msgs = getMessages();
-                            TransportEngine.this.writer.write(msgs);
+                            Transporter.this.writer.write(msgs);
                         } catch (Exception e) {
-                            status = TransportEngineStatus.error;
+                            status = TransporterStatus.error;
                             e.printStackTrace();
                             log.error("写入数据失败:{}", Strings.getExceptionTrace(e));
                         }
@@ -86,16 +86,20 @@ public class TransportEngine implements ITransportEngine {
     public void stop() {
         readerExecutor.shutdown();
         writerExecutor.shutdown();
-        status = TransportEngineStatus.stopped;
+        status = TransporterStatus.stopped;
     }
 
 
     @Override
     public void write(Message... msgs) throws Exception {
-        if (status == TransportEngineStatus.running) {
+        if (status == TransporterStatus.running) {
             if (msgs != null || msgs.length > 0) {
                 for (int i = 0, c = msgs.length; i < c; i++) {
-                    writeQueue.add(msgs[i]);
+                    Message msg = msgs[i];
+                    // msg.setAppHost(proxy.getConfig());
+                    // msg.setAppPort();
+                    // msg.setProxyServer();
+                    writeQueue.add(msg);
                 }
             }
         } else {
@@ -110,7 +114,7 @@ public class TransportEngine implements ITransportEngine {
     }
 
     @Override
-    public TransportEngineStatus status() {
+    public TransporterStatus status() {
         return status;
     }
 
