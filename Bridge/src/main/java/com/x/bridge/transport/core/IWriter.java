@@ -11,4 +11,6 @@ public interface IWriter {
 
     void write(Message... msgs) throws Exception;
 
+    void clear();
+
 }

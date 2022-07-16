@@ -46,4 +46,13 @@ public class DBWriter implements IWriter {
         }
     }
 
+    @Override
+    public void clear() {
+        if (proxy.isServerMode()) {
+            serverWriter.remove(null);
+        } else {
+            clientWriter.remove(null);
+        }
+    }
+
 }

@@ -3,6 +3,7 @@ package com.x.bridge.session;
 import com.x.bridge.bean.Message;
 import com.x.bridge.interfaces.IService;
 import com.x.bridge.transport.core.IReceiver;
+import java.util.Set;
 
 /**
  * @author AD
@@ -18,8 +19,10 @@ public interface ISessionManager extends IService, IReceiver<Message> {
 
     Session removeSession(String client);
 
-    Session getSession(String client) ;
+    Session getSession(String client);
 
-    void sync();
+    Set<String> getSessionKeys();
+
+    void sync(String[] validClients);
 
 }

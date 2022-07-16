@@ -15,4 +15,6 @@ public interface ITransporter extends IService, IWriter {
 
     TransporterStatus status();
 
+    void clear();
+
 }

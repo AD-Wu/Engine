@@ -3,10 +3,11 @@ package com.x.bridge.enums;
 import com.x.bridge.bean.Message;
 import com.x.bridge.netty.core.SocketConfig;
 import com.x.bridge.netty.factory.SocketClient;
+import com.x.bridge.proxy.client.SocketClientListener;
 import com.x.bridge.proxy.core.ICommand;
 import com.x.bridge.proxy.core.IProxy;
 import com.x.bridge.session.Session;
-import com.x.bridge.proxy.client.SocketClientListener;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.log4j.Log4j2;
@@ -50,7 +51,16 @@ public enum Command implements ICommand {
     sync(5) {
         @Override
         public void execute(Message msg, Session session, IProxy proxy) {
-
+            byte[] data = msg.getData();
+            String[] clients = null;
+            if (data != null && data.length > 0) {
+                clients = new String(data, StandardCharsets.UTF_8).split(",");
+            } else {
+                // 没有socket连接,清空所有传输媒介的数据
+                proxy.getTransporter().clear();
+            }
+            // 清空会话缓存
+            proxy.getSessionManager().sync(clients);
         }
     },
     heartbeat(6) {

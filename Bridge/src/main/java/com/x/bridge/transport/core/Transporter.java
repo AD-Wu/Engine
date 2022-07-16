@@ -123,6 +123,11 @@ public class Transporter extends Service implements ITransporter {
         return status;
     }
 
+    @Override
+    public void clear() {
+        writer.clear();
+    }
+
     private Message[] getMessages() {
         List<Message> msgs = new ArrayList<>();
         int sumBytes = 0;

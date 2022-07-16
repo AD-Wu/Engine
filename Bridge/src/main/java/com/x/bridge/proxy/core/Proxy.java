@@ -1,14 +1,22 @@
 package com.x.bridge.proxy.core;
 
+import com.x.bridge.bean.Message;
+import com.x.bridge.enums.Command;
+import com.x.bridge.enums.MessageType;
 import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.enums.TransportMode;
 import com.x.bridge.interfaces.Service;
 import com.x.bridge.session.ISessionManager;
+import com.x.bridge.session.Session;
 import com.x.bridge.session.SessionManager;
 import com.x.bridge.transport.core.IReader;
 import com.x.bridge.transport.core.ITransporter;
 import com.x.bridge.transport.core.IWriter;
 import com.x.bridge.transport.core.Transporter;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -19,6 +27,7 @@ import lombok.extern.log4j.Log4j2;
 public abstract class Proxy extends Service implements IProxy {
 
     protected ProxyConfig conf;
+    protected List<ProxyStatus> statusQueue;
     protected volatile ProxyStatus status;
     protected ITransporter transporter;
     protected ISessionManager sessions;
@@ -26,6 +35,7 @@ public abstract class Proxy extends Service implements IProxy {
     public Proxy(ProxyConfig conf) {
         this.conf = conf;
         this.status = ProxyStatus.stopped;
+        this.statusQueue = new LinkedList<>();
         this.sessions = new SessionManager(this);
         IReader reader = TransportMode.get(conf.getReadMode()).createReader(this);
         IWriter writer = TransportMode.get(conf.getWriteMode()).createWriter(this);
@@ -60,6 +70,48 @@ public abstract class Proxy extends Service implements IProxy {
     @Override
     protected void onStartError(Throwable e) {
         stop();
+    }
+
+    @Override
+    public void sync() {
+        this.status = ProxyStatus.sync;
+        String clients = getSessionManager().getSessionKeys().stream().collect(Collectors.joining(","));
+        byte[] clientsBytes = null;
+        if (clients != null && clients.length() > 0) {
+            clientsBytes = clients.getBytes(StandardCharsets.UTF_8);
+        }
+        Message msg = new Message();
+        msg.setAppClient("sync");
+        msg.setProxyName(name());
+        msg.setCmd(Command.sync.code);
+        msg.setType(MessageType.function.code);
+        msg.setSeq(Session.seq);
+        msg.setData(clientsBytes);
+        try {
+            getTransporter().write(msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void startTransporter() throws Exception {
+        if (transporter.start()) {
+            log.info("传输引擎启动成功");
+        } else {
+            status = ProxyStatus.error;
+            log.error("传输引擎启动失败");
+            throw new RuntimeException("传输引擎启动失败");
+        }
+    }
+
+    protected void startSessionManager() throws Exception {
+        if (sessions.start()) {
+            log.info("会话管理启动成功");
+        } else {
+            status = ProxyStatus.error;
+            log.info("会话管理启动失败");
+            throw new RuntimeException("会话管理启动失败");
+        }
     }
 
 }

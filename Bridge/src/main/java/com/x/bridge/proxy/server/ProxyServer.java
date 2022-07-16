@@ -15,7 +15,6 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ProxyServer extends Proxy {
 
-    private ProxyConfig conf;
     private ISocket server;
 
     public ProxyServer(ProxyConfig conf) {
@@ -36,25 +35,12 @@ public class ProxyServer extends Proxy {
 
     @Override
     protected boolean onStart() throws Exception {
-        if (transporter.start()) {
-            log.info("传输引擎启动成功");
-            if (server.start()) {
-                log.info("socket服务器启动成功,端口【{}】", conf.getPort());
-                if (sessions.start()) {
-                    log.info("会话管理启动成功");
-                    status = ProxyStatus.running;
-                    return true;
-                } else {
-                    log.info("会话管理启动失败");
-                }
-            } else {
-                log.info("socket服务器启动失败");
-            }
-        } else {
-            log.error("传输引擎启动失败");
-        }
-        status = ProxyStatus.error;
-        return false;
+        startTransporter();
+        startSessionManager();
+        sync();
+        startSocketServer();
+        status = ProxyStatus.running;
+        return true;
     }
 
     @Override
@@ -62,6 +48,16 @@ public class ProxyServer extends Proxy {
         transporter.stop();
         server.stop();
         sessions.stop();
+    }
+
+    private void startSocketServer() throws Exception {
+        if (server.start()) {
+            log.info("socket服务器启动成功,端口【{}】", conf.getPort());
+        } else {
+            status = ProxyStatus.error;
+            log.info("socket服务器启动失败");
+            throw new RuntimeException("socket服务器启动失败");
+        }
     }
 
 }

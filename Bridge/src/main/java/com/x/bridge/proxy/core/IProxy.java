@@ -28,4 +28,6 @@ public interface IProxy extends IService {
 
     ProxyConfig getConfig();
 
+    void sync();
+
 }

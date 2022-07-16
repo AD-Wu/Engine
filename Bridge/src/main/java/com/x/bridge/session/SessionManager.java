@@ -4,12 +4,13 @@ import com.x.bridge.bean.Message;
 import com.x.bridge.enums.MessageType;
 import com.x.bridge.interfaces.Service;
 import com.x.bridge.proxy.core.IProxy;
+import com.x.doraemon.Arrayx;
 import com.x.doraemon.therad.BalanceExecutor;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -96,10 +97,33 @@ public class SessionManager extends Service implements ISessionManager {
     }
 
     @Override
-    public void sync() {
-        String clients = sessions.keySet().stream().collect(Collectors.joining(","));
-        byte[] bytes = clients.getBytes(StandardCharsets.UTF_8);
-        Message msg = new Message();
+    public Set<String> getSessionKeys() {
+        ReadLock readLock = lock.readLock();
+        try {
+            readLock.lock();
+            return sessions.keySet();
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    @Override
+    public void sync(String[] validClients) {
+        WriteLock writeLock = lock.writeLock();
+        try {
+            writeLock.lock();
+            Set<String> invalids = sessions.keySet();
+            if (Arrayx.isNotEmpty(validClients)) {
+                Set<String> valids = Arrays.stream(validClients).collect(Collectors.toSet());
+                invalids.removeAll(valids);
+            }
+            invalids.stream().forEach(client -> {
+                Session session = sessions.remove(client);
+                session.close();
+            });
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     @Override
@@ -126,12 +150,14 @@ public class SessionManager extends Service implements ISessionManager {
         Map<Integer, List<Message>> types = Arrays.stream(messages).collect(Collectors.groupingBy(Message::getType));
         types.entrySet().stream().forEach(e -> {
             int typeCode = e.getKey();
+            List<Message> msgs = e.getValue();
             MessageType type = MessageType.get(typeCode);
             switch (type) {
                 case socket:
-                    handleSocketMessage(e.getValue());
+                    handleSocketMessage(msgs);
                     break;
                 case function:
+                    handleFunctionMessage(msgs);
                     break;
                 default:
                     break;
@@ -163,23 +189,15 @@ public class SessionManager extends Service implements ISessionManager {
     }
 
     private void handleFunctionMessage(List<Message> msgs) {
-        // 同一类型的消息
         Map<String, List<Message>> groups = msgs.stream().collect(Collectors.groupingBy(Message::getAppClient));
         groups.entrySet().stream().forEach(e -> {
-
             String client = e.getKey();
             List<Message> msg = e.getValue();
-            // 代理为客户端且不存在会话
-            if (!proxy.isServerMode() && !existSession(client)) {
-                putSession(client, new Session(client, proxy));
-            }
             executor.execute(client, new Runnable() {
                 @Override
                 public void run() {
-                    Session session = getSession(client);
-                    if (session != null) {
-                        session.receive(msg.toArray(new Message[0]));
-                    }
+                    Session session = new Session(client, proxy);
+                    session.receive(msg.toArray(new Message[0]));
                 }
             });
         });

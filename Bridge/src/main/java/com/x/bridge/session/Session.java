@@ -19,6 +19,8 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class Session {
 
+    public static final long seq = 1;
+
     private final String appClient;
 
     private final IProxy proxy;
@@ -139,11 +141,11 @@ public class Session {
     }
 
     private void resetSendSeq() {
-        this.nextSend = 1;
+        this.nextSend = seq;
     }
 
     private void resetRecvSeq() {
-        this.nextRecv = 1;
+        this.nextRecv = seq;
     }
 
     @Override

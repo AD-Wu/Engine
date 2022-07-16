@@ -17,21 +17,12 @@ public class ProxyClient extends Proxy {
     }
 
     @Override
-    protected boolean onStart() {
-        if (transporter.start()) {
-            log.info("传输引擎启动成功");
-            if (sessions.start()) {
-                log.info("会话管理启动成功");
-                status = ProxyStatus.running;
-                return true;
-            } else {
-                log.info("会话管理启动失败");
-            }
-        } else {
-            log.error("传输引擎启动失败");
-        }
-        status = ProxyStatus.error;
-        return false;
+    protected boolean onStart() throws Exception{
+        startTransporter();
+        startSessionManager();
+        sync();
+        status = ProxyStatus.running;
+        return true;
     }
 
     @Override
