@@ -29,12 +29,17 @@ public class Message implements Serializable {
     /**
      * 代理服务器地址
      */
-    private String proxyServer;
+    private String proxyName;
 
     /**
      * 应用客户端地址
      */
     private String appClient;
+
+    /**
+     * 消息类型
+     */
+    private int type;
 
     /**
      * 命令
@@ -77,12 +82,12 @@ public class Message implements Serializable {
         this.appPort = appPort;
     }
 
-    public String getProxyServer() {
-        return proxyServer;
+    public String getProxyName() {
+        return proxyName;
     }
 
-    public void setProxyServer(String proxyServer) {
-        this.proxyServer = proxyServer;
+    public void setProxyName(String proxyName) {
+        this.proxyName = proxyName;
     }
 
     public String getAppClient() {
@@ -91,6 +96,14 @@ public class Message implements Serializable {
 
     public void setAppClient(String appClient) {
         this.appClient = appClient;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 
     public int getCmd() {

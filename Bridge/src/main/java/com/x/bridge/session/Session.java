@@ -2,8 +2,9 @@ package com.x.bridge.session;
 
 import com.google.common.base.Objects;
 import com.x.bridge.bean.Message;
-import com.x.bridge.proxy.command.Command;
-import com.x.bridge.proxy.command.ICommand;
+import com.x.bridge.enums.Command;
+import com.x.bridge.enums.MessageType;
+import com.x.bridge.proxy.core.ICommand;
 import com.x.bridge.proxy.core.IProxy;
 import com.x.doraemon.Strings;
 import io.netty.channel.ChannelHandlerContext;
@@ -113,9 +114,13 @@ public class Session {
         }
         Message msg = new Message();
         msg.setSeq(nextSendSeq());
+        msg.setType(MessageType.socket.code);
         msg.setCmd(cmd);
         msg.setData(data);
         msg.setAppClient(appClient);
+        msg.setAppHost(proxy.getConfig().getAppHost());
+        msg.setAppPort(proxy.getConfig().getAppPort());
+        msg.setProxyName(proxy.getConfig().getName());
         return msg;
     }
 

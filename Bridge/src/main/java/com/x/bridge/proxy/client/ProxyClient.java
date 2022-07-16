@@ -12,13 +12,12 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ProxyClient extends Proxy {
 
-    public ProxyClient(String name, ProxyConfig conf) {
-        super(name, conf);
+    public ProxyClient(ProxyConfig conf) {
+        super(conf);
     }
 
-
     @Override
-    public boolean start() {
+    protected boolean onStart() {
         if (transporter.start()) {
             log.info("传输引擎启动成功");
             if (sessions.start()) {
@@ -36,8 +35,13 @@ public class ProxyClient extends Proxy {
     }
 
     @Override
-    public void stop() {
+    protected void onStop() {
         transporter.stop();
         sessions.stop();
+    }
+
+    @Override
+    public boolean isServerMode() {
+        return false;
     }
 }

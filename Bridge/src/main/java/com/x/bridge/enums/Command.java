@@ -1,8 +1,9 @@
-package com.x.bridge.proxy.command;
+package com.x.bridge.enums;
 
 import com.x.bridge.bean.Message;
 import com.x.bridge.netty.core.SocketConfig;
 import com.x.bridge.netty.factory.SocketClient;
+import com.x.bridge.proxy.core.ICommand;
 import com.x.bridge.proxy.core.IProxy;
 import com.x.bridge.session.Session;
 import com.x.bridge.proxy.client.SocketClientListener;
@@ -17,10 +18,11 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public enum Command implements ICommand {
+
     open(1) {
         @Override
         public void execute(Message msg, Session session, IProxy proxy) {
-            log.info("代理【{}】发来会话【{}】建立命令", msg.getProxyServer(), msg.getAppClient());
+            log.info("代理【{}】发来会话【{}】建立命令", msg.getProxyName(), msg.getAppClient());
             String appClient = msg.getAppClient();
             SocketConfig conf = SocketConfig.getClientConfig(msg.getAppHost(), msg.getAppPort());
             SocketClient client = new SocketClient(conf, new SocketClientListener(appClient, proxy));

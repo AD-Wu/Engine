@@ -36,8 +36,8 @@ public abstract class Service implements IService {
 
     protected abstract boolean onStart() throws Exception;
 
-    protected abstract boolean onStop() throws Exception;
+    protected abstract void onStop();
 
-    protected abstract boolean onStartError(Throwable e);
+    protected abstract void onStartError(Throwable e);
 
 }

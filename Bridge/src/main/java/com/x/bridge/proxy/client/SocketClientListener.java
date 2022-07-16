@@ -6,7 +6,7 @@ package com.x.bridge.proxy.client;
  */
 
 import com.x.bridge.netty.interfaces.ISessionListener;
-import com.x.bridge.proxy.command.Command;
+import com.x.bridge.enums.Command;
 import com.x.bridge.proxy.core.IProxy;
 import com.x.bridge.session.Session;
 import com.x.bridge.util.ChannelHelper;

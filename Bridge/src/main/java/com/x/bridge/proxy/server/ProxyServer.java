@@ -4,6 +4,7 @@ import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.netty.factory.SocketServer;
 import com.x.bridge.netty.interfaces.ISocket;
 import com.x.bridge.proxy.core.Proxy;
+import com.x.bridge.proxy.core.ProxyConfig;
 import java.util.Set;
 import lombok.extern.log4j.Log4j2;
 
@@ -14,12 +15,17 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class ProxyServer extends Proxy {
 
-    private ProxyServerConfig conf;
+    private ProxyConfig conf;
     private ISocket server;
 
-    public ProxyServer(String name, ProxyServerConfig conf) {
-        super(name, conf);
+    public ProxyServer(ProxyConfig conf) {
+        super(conf);
         this.server = new SocketServer(conf.getPort(), new SocketServerListener(this));
+    }
+
+    @Override
+    public boolean isServerMode() {
+        return true;
     }
 
     @Override
@@ -29,12 +35,7 @@ public class ProxyServer extends Proxy {
     }
 
     @Override
-    public ProxyStatus status() {
-        return null;
-    }
-
-    @Override
-    public boolean start() {
+    protected boolean onStart() throws Exception {
         if (transporter.start()) {
             log.info("传输引擎启动成功");
             if (server.start()) {
@@ -57,9 +58,10 @@ public class ProxyServer extends Proxy {
     }
 
     @Override
-    public void stop() {
+    protected void onStop() {
         transporter.stop();
         server.stop();
         sessions.stop();
     }
+
 }

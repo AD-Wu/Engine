@@ -4,6 +4,7 @@ import com.x.bridge.bean.Message;
 
 import com.x.bridge.enums.TransporterStatus;
 
+import com.x.bridge.interfaces.Service;
 import com.x.bridge.proxy.core.IProxy;
 import com.x.doraemon.Strings;
 import com.x.doraemon.therad.BalanceExecutor;
@@ -21,7 +22,7 @@ import lombok.extern.log4j.Log4j2;
  * @date 2022/7/11 19:52
  */
 @Log4j2
-public class Transporter implements ITransporter {
+public class Transporter extends Service implements ITransporter {
 
     private static final int maxBytes = 70000;
     private final IProxy proxy;
@@ -31,7 +32,7 @@ public class Transporter implements ITransporter {
 
     private final ScheduledExecutorService readerExecutor = Executors.newScheduledThreadPool(1);
     private final ExecutorService writerExecutor = new BalanceExecutor<String>("Writer", 1);
-    private final ArrayBlockingQueue<Message> writeQueue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
+    private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
 
     public Transporter(IProxy proxy, IReader reader, IWriter writer) {
         this.proxy = proxy;
@@ -41,7 +42,8 @@ public class Transporter implements ITransporter {
     }
 
     @Override
-    public boolean start() {
+    protected boolean onStart() throws Exception {
+        status = TransporterStatus.running;
         readerExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
@@ -83,10 +85,16 @@ public class Transporter implements ITransporter {
     }
 
     @Override
-    public void stop() {
+    protected void onStop() {
+        status = TransporterStatus.stopped;
         readerExecutor.shutdown();
         writerExecutor.shutdown();
-        status = TransporterStatus.stopped;
+        queue.clear();
+    }
+
+    @Override
+    protected void onStartError(Throwable e) {
+        stop();
     }
 
 
@@ -96,10 +104,7 @@ public class Transporter implements ITransporter {
             if (msgs != null || msgs.length > 0) {
                 for (int i = 0, c = msgs.length; i < c; i++) {
                     Message msg = msgs[i];
-                    // msg.setAppHost(proxy.getConfig());
-                    // msg.setAppPort();
-                    // msg.setProxyServer();
-                    writeQueue.add(msg);
+                    queue.add(msg);
                 }
             }
         } else {
@@ -121,8 +126,8 @@ public class Transporter implements ITransporter {
     private Message[] getMessages() {
         List<Message> msgs = new ArrayList<>();
         int sumBytes = 0;
-        while (!writeQueue.isEmpty() && (sumBytes = getSumBytes(sumBytes)) <= maxBytes) {
-            msgs.add(writeQueue.poll());
+        while (!queue.isEmpty() && (sumBytes = getSumBytes(sumBytes)) <= maxBytes) {
+            msgs.add(queue.poll());
         }
         if (sumBytes > 0) {
             log.info("数据域字节总数【{}】", sumBytes);
@@ -131,7 +136,7 @@ public class Transporter implements ITransporter {
     }
 
     private int getSumBytes(int sumBytes) {
-        byte[] data = writeQueue.peek().getData();
+        byte[] data = queue.peek().getData();
         return data == null ? sumBytes : sumBytes + data.length;
     }
 }

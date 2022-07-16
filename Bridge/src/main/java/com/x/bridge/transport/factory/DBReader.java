@@ -53,7 +53,7 @@ public class DBReader implements IReader {
     private Message[] dynamicQuery(IService<Message> reader) throws Exception {
         // 构建查询条件
         LambdaQueryWrapper<Message> query = new LambdaQueryWrapper<>();
-        query.eq(Message::getProxyServer, null);
+        query.eq(Message::getProxyName, null);
         query.last("limit " + getLimit(counter.intValue()));
         try {
             List<Message> msgs = reader.list(query);

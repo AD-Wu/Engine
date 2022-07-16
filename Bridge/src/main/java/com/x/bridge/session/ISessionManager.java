@@ -12,8 +12,6 @@ public interface ISessionManager extends IService, IReceiver<Message> {
 
     String name();
 
-    boolean isAccept(String client);
-
     boolean existSession(String client);
 
     void putSession(String client, Session session);
@@ -21,5 +19,7 @@ public interface ISessionManager extends IService, IReceiver<Message> {
     Session removeSession(String client);
 
     Session getSession(String client) ;
+
+    void sync();
 
 }

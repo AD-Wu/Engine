@@ -2,6 +2,7 @@ package com.x.bridge.proxy.core;
 
 import com.x.bridge.enums.ProxyStatus;
 import com.x.bridge.enums.TransportMode;
+import com.x.bridge.interfaces.Service;
 import com.x.bridge.session.ISessionManager;
 import com.x.bridge.session.SessionManager;
 import com.x.bridge.transport.core.IReader;
@@ -15,16 +16,14 @@ import lombok.extern.log4j.Log4j2;
  * @date 2022/7/14 17:02
  */
 @Log4j2
-public abstract class Proxy implements IProxy {
+public abstract class Proxy extends Service implements IProxy {
 
-    protected String name;
     protected ProxyConfig conf;
     protected volatile ProxyStatus status;
     protected ITransporter transporter;
     protected ISessionManager sessions;
 
-    public Proxy(String name, ProxyConfig conf) {
-        this.name = name;
+    public Proxy(ProxyConfig conf) {
         this.conf = conf;
         this.status = ProxyStatus.stopped;
         this.sessions = new SessionManager(this);
@@ -35,17 +34,12 @@ public abstract class Proxy implements IProxy {
 
     @Override
     public String name() {
-        return name;
+        return conf.getName();
     }
 
     @Override
     public ProxyStatus status() {
         return status;
-    }
-
-    @Override
-    public boolean isServerMode() {
-        return false;
     }
 
     @Override
@@ -61,6 +55,11 @@ public abstract class Proxy implements IProxy {
     @Override
     public ProxyConfig getConfig() {
         return conf;
+    }
+
+    @Override
+    protected void onStartError(Throwable e) {
+        stop();
     }
 
 }
