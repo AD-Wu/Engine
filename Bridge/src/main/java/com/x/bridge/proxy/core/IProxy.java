@@ -11,23 +11,25 @@ import com.x.bridge.transport.core.ITransporter;
  * @date 2022/6/21 14:52
  */
 public interface IProxy extends IService {
-
+    
     String name();
-
+    
     boolean isServerMode();
-
+    
     default boolean isAccept(String client) {
         return true;
     }
-
+    
     ISessionManager getSessionManager();
-
+    
     ITransporter getTransporter();
-
+    
     ProxyStatus status();
-
+    
+    void status(ProxyStatus status);
+    
     ProxyConfig getConfig();
-
-    void sync();
-
+    
+    void sync(boolean syncStart);
+    
 }

@@ -6,16 +6,13 @@ import com.x.bridge.interfaces.Service;
 import com.x.bridge.proxy.core.IProxy;
 import com.x.doraemon.Arrayx;
 import com.x.doraemon.therad.BalanceExecutor;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import lombok.extern.log4j.Log4j2;
+
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.stream.Collectors;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * @author AD
@@ -108,17 +105,17 @@ public class SessionManager extends Service implements ISessionManager {
     }
 
     @Override
-    public void sync(String[] validClients) {
+    public void sync(String[] clients) {
         WriteLock writeLock = lock.writeLock();
         try {
             writeLock.lock();
             Set<String> invalids = sessions.keySet();
-            if (Arrayx.isNotEmpty(validClients)) {
-                Set<String> valids = Arrays.stream(validClients).collect(Collectors.toSet());
-                invalids.removeAll(valids);
+            if (Arrayx.isNotEmpty(clients)) {
+                Set<String> valid = Arrays.stream(clients).collect(Collectors.toSet());
+                invalids.removeAll(valid);
             }
-            invalids.stream().forEach(client -> {
-                Session session = sessions.remove(client);
+            invalids.stream().forEach(invalid -> {
+                Session session = sessions.remove(invalid);
                 session.close();
             });
         } finally {
@@ -156,7 +153,7 @@ public class SessionManager extends Service implements ISessionManager {
                 case socket:
                     handleSocketMessage(msgs);
                     break;
-                case function:
+                case command:
                     handleFunctionMessage(msgs);
                     break;
                 default:

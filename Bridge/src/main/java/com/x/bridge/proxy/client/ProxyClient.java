@@ -11,28 +11,30 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class ProxyClient extends Proxy {
-
+    
     public ProxyClient(ProxyConfig conf) {
         super(conf);
     }
-
+    
     @Override
-    protected boolean onStart() throws Exception{
+    protected boolean onStart() throws Exception {
         startTransporter();
         startSessionManager();
-        sync();
-        status = ProxyStatus.running;
+        status(ProxyStatus.syncStart);
+        sync(true);
         return true;
     }
-
+    
     @Override
     protected void onStop() {
+        status(ProxyStatus.stopped);
         transporter.stop();
         sessions.stop();
     }
-
+    
     @Override
     public boolean isServerMode() {
         return false;
     }
+    
 }

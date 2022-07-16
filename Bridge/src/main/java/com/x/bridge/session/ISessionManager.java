@@ -23,6 +23,6 @@ public interface ISessionManager extends IService, IReceiver<Message> {
 
     Set<String> getSessionKeys();
 
-    void sync(String[] validClients);
+    void sync(String[] clients);
 
 }

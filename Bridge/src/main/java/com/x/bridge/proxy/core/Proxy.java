@@ -13,11 +13,12 @@ import com.x.bridge.transport.core.IReader;
 import com.x.bridge.transport.core.ITransporter;
 import com.x.bridge.transport.core.IWriter;
 import com.x.bridge.transport.core.Transporter;
+import com.x.doraemon.Strings;
+import lombok.extern.log4j.Log4j2;
+
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * @author AD
@@ -25,13 +26,19 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public abstract class Proxy extends Service implements IProxy {
-
+    
     protected ProxyConfig conf;
+    
     protected List<ProxyStatus> statusQueue;
-    protected volatile ProxyStatus status;
+    
+    private volatile ProxyStatus status;
+    
+    private volatile ProxyStatus lastStatus;
+    
     protected ITransporter transporter;
+    
     protected ISessionManager sessions;
-
+    
     public Proxy(ProxyConfig conf) {
         this.conf = conf;
         this.status = ProxyStatus.stopped;
@@ -41,41 +48,46 @@ public abstract class Proxy extends Service implements IProxy {
         IWriter writer = TransportMode.get(conf.getWriteMode()).createWriter(this);
         this.transporter = new Transporter(this, reader, writer);
     }
-
+    
     @Override
     public String name() {
         return conf.getName();
     }
-
+    
     @Override
     public ProxyStatus status() {
         return status;
     }
-
+    
     @Override
     public ISessionManager getSessionManager() {
         return sessions;
     }
-
+    
     @Override
     public ITransporter getTransporter() {
         return transporter;
     }
-
+    
     @Override
     public ProxyConfig getConfig() {
         return conf;
     }
-
+    
     @Override
     protected void onStartError(Throwable e) {
         stop();
     }
-
+    
     @Override
-    public void sync() {
-        this.status = ProxyStatus.sync;
-        String clients = getSessionManager().getSessionKeys().stream().collect(Collectors.joining(","));
+    public void sync(boolean syncStart) {
+        if (syncStart) {
+            status(ProxyStatus.syncStart);
+        } else {
+            status(ProxyStatus.syncSession);
+        }
+        
+        String clients = Strings.joining(",",getSessionManager().getSessionKeys());
         byte[] clientsBytes = null;
         if (clients != null && clients.length() > 0) {
             clientsBytes = clients.getBytes(StandardCharsets.UTF_8);
@@ -84,7 +96,7 @@ public abstract class Proxy extends Service implements IProxy {
         msg.setAppClient("sync");
         msg.setProxyName(name());
         msg.setCmd(Command.sync.code);
-        msg.setType(MessageType.function.code);
+        msg.setType(MessageType.command.code);
         msg.setSeq(Session.seq);
         msg.setData(clientsBytes);
         try {
@@ -93,7 +105,13 @@ public abstract class Proxy extends Service implements IProxy {
             e.printStackTrace();
         }
     }
-
+    
+    @Override
+    public void status(ProxyStatus status) {
+        this.lastStatus = this.status;
+        this.status = status;
+    }
+    
     protected void startTransporter() throws Exception {
         if (transporter.start()) {
             log.info("传输引擎启动成功");
@@ -103,7 +121,7 @@ public abstract class Proxy extends Service implements IProxy {
             throw new RuntimeException("传输引擎启动失败");
         }
     }
-
+    
     protected void startSessionManager() throws Exception {
         if (sessions.start()) {
             log.info("会话管理启动成功");
@@ -113,5 +131,5 @@ public abstract class Proxy extends Service implements IProxy {
             throw new RuntimeException("会话管理启动失败");
         }
     }
-
+    
 }

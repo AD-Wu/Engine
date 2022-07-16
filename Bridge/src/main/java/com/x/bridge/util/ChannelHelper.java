@@ -46,6 +46,14 @@ public class ChannelHelper {
         }
         return chnInfos.get(key);
     }
+    
+    public static ChannelInfo removeChannelInfo(ChannelHandlerContext ctx) {
+        Channel chn = ctx.channel();
+        String local = chn.localAddress().toString().substring(1);
+        String remote = chn.remoteAddress().toString().substring(1);
+        String key = genKey(remote, local);
+        return chnInfos.remove(key);
+    }
 
     public static byte[] readData(ByteBuf buf) {
         if (buf != null) {

@@ -6,7 +6,8 @@ package com.x.bridge.enums;
  * @date 2022/6/22 22:13
  */
 public enum ProxyStatus {
-    sync,
+    syncStart,
+    syncSession,
     running,
     stopped,
     error;

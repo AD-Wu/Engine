@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public enum MessageType {
     socket(1),
-    function(2);
+    command(2);
 
     public static MessageType get(int code) {
         return types.get(code);
