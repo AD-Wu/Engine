@@ -4,9 +4,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Formatter;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author AD
@@ -87,12 +88,22 @@ public class Strings extends StringUtils {
      * @param os    需要拼接的对象（String）
      * @return 如：1,2,3,null
      */
-    public static String joining(String split, Object... os) {
-        if (os == null || os.length == 0) {
+    public static String joining(String split, Collection<Object> os) {
+        if (os == null || os.size() == 0) {
             return "";
         }
         split = split == null ? "" : split;
-        return Stream.of(os).map(o -> String.valueOf(o)).collect(Collectors.joining(split));
+        return os.stream().map(o -> String.valueOf(o)).collect(Collectors.joining(split));
+    }
+    
+    /**
+     * 将字符串进行拼接
+     * @param split 分隔符
+     * @param os    需要拼接的对象（String）
+     * @return 如：1,2,3,null
+     */
+    public static String joining(String split, Object... os) {
+        return joining(split, Arrays.asList(os));
     }
     
     /**
