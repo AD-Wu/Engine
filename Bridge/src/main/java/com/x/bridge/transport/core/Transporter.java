@@ -1,21 +1,16 @@
 package com.x.bridge.transport.core;
 
-import com.x.bridge.bean.Message;
-
-import com.x.bridge.enums.TransporterStatus;
-
-import com.x.bridge.interfaces.Service;
-import com.x.bridge.proxy.core.IProxy;
+import com.x.bridge.proxy.core.IProxyService;
+import com.x.bridge.proxy.core.Service;
+import com.x.bridge.bean.SessionMsg;
+import com.x.bridge.proxy.enums.TransporterStatus;
 import com.x.doraemon.Strings;
 import com.x.doraemon.therad.BalanceExecutor;
+import lombok.extern.log4j.Log4j2;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import lombok.extern.log4j.Log4j2;
+import java.util.concurrent.*;
 
 /**
  * @author AD
@@ -25,16 +20,16 @@ import lombok.extern.log4j.Log4j2;
 public class Transporter extends Service implements ITransporter {
 
     private static final int maxBytes = 70000;
-    private final IProxy proxy;
-    private final IReader reader;
-    private final IWriter writer;
+    private final IProxyService proxy;
+    private final IReader<SessionMsg> reader;
+    private final IWriter<SessionMsg> writer;
     protected volatile TransporterStatus status;
 
     private final ScheduledExecutorService readerExecutor = Executors.newScheduledThreadPool(1);
     private final ExecutorService writerExecutor = new BalanceExecutor<String>("Writer", 1);
-    private final ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
+    private final ArrayBlockingQueue<SessionMsg> queue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
 
-    public Transporter(IProxy proxy, IReader reader, IWriter writer) {
+    public Transporter(IProxyService proxy, IReader<SessionMsg> reader, IWriter<SessionMsg> writer) {
         this.proxy = proxy;
         this.reader = reader;
         this.writer = writer;
@@ -48,7 +43,7 @@ public class Transporter extends Service implements ITransporter {
             @Override
             public void run() {
                 try {
-                    Message[] msgs = reader.read();
+                    SessionMsg[] msgs = reader.read();
                     status = TransporterStatus.running;
                     IReceiver receiver = getReceiver();
                     if (receiver != null) {
@@ -68,7 +63,7 @@ public class Transporter extends Service implements ITransporter {
                 while (true) {
                     if (status == TransporterStatus.running) {
                         try {
-                            Message[] msgs = getMessages();
+                            SessionMsg[] msgs = getMessages();
                             Transporter.this.writer.write(msgs);
                         } catch (Exception e) {
                             status = TransporterStatus.error;
@@ -99,11 +94,11 @@ public class Transporter extends Service implements ITransporter {
 
 
     @Override
-    public void write(Message... msgs) throws Exception {
+    public void write(SessionMsg... msgs) throws Exception {
         if (status == TransporterStatus.running) {
             if (msgs != null || msgs.length > 0) {
                 for (int i = 0, c = msgs.length; i < c; i++) {
-                    Message msg = msgs[i];
+                    SessionMsg msg = msgs[i];
                     queue.add(msg);
                 }
             }
@@ -115,7 +110,7 @@ public class Transporter extends Service implements ITransporter {
 
     @Override
     public IReceiver getReceiver() {
-        return proxy.getSessionManager();
+        return proxy;
     }
 
     @Override
@@ -128,8 +123,8 @@ public class Transporter extends Service implements ITransporter {
         writer.clear();
     }
 
-    private Message[] getMessages() {
-        List<Message> msgs = new ArrayList<>();
+    private SessionMsg[] getMessages() {
+        List<SessionMsg> msgs = new ArrayList<>();
         int sumBytes = 0;
         while (!queue.isEmpty() && (sumBytes = getSumBytes(sumBytes)) <= maxBytes) {
             msgs.add(queue.poll());
@@ -137,7 +132,7 @@ public class Transporter extends Service implements ITransporter {
         if (sumBytes > 0) {
             log.info("数据域字节总数【{}】", sumBytes);
         }
-        return msgs.toArray(new Message[0]);
+        return msgs.toArray(new SessionMsg[0]);
     }
 
     private int getSumBytes(int sumBytes) {

@@ -1,42 +1,56 @@
-package com.x.bridge.proxy.core;
+package com.x.bridge.web.api.proxy.data;
 
 import com.x.bridge.proxy.enums.TransportMode;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
-import java.io.Serializable;
 import java.util.Set;
+import java.util.StringJoiner;
 
 /**
+ * 代理客户端请求参数
  * @author AD
- * @date 2022/7/14 16:48
+ * @date 2022/7/17 10:47
  */
-public class ProxyConfig implements Serializable {
+public class ProxyReq {
     
-    private static final long serialVersionUID = 1L;
+    /**
+     * 名称
+     */
+    protected String name;
     
-    // ------------------------ 静态变量------------------------
+    /**
+     * 超时(秒)
+     */
+    protected int connectTimeout = 60;
     
-    // ------------------------ 变量定义 ------------------------
-    private String name;
+    /**
+     * 写模式
+     */
+    protected String writeMode = TransportMode.DB.toString();
     
-    private int timeout = 60;
+    /**
+     * 读模式
+     */
+    protected String readMode = TransportMode.DB.toString();
     
-    private String writeMode = TransportMode.DB.toString();
-    
-    private String readMode = TransportMode.DB.toString();
-    
+    /**
+     * 代理端口
+     */
     private int port;
     
+    /**
+     * 应用host
+     */
     private String appHost;
     
+    /**
+     * 应用端口
+     */
     private int appPort;
     
+    /**
+     * 白名单
+     */
     private Set<String> allowClients;
-    
-    // ------------------------ 构造方法 ------------------------
-    public ProxyConfig() {}
-    // ------------------------ 方法定义 ------------------------
     
     public String getName() {
         return name;
@@ -46,12 +60,12 @@ public class ProxyConfig implements Serializable {
         this.name = name;
     }
     
-    public int getTimeout() {
-        return timeout;
+    public int getConnectTimeout() {
+        return connectTimeout;
     }
     
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
     }
     
     public String getWriteMode() {
@@ -104,7 +118,16 @@ public class ProxyConfig implements Serializable {
     
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        return new StringJoiner(", ", ProxyReq.class.getSimpleName() + "[", "]")
+                .add("name='" + name + "'")
+                .add("connectTimeout=" + connectTimeout)
+                .add("writeMode='" + writeMode + "'")
+                .add("readMode='" + readMode + "'")
+                .add("port=" + port)
+                .add("appHost='" + appHost + "'")
+                .add("appPort=" + appPort)
+                .add("allowClients=" + allowClients)
+                .toString();
     }
     
 }

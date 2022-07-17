@@ -1,17 +1,16 @@
 package com.x.bridge.transport.factory;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.x.bridge.bean.Message;
-import com.x.bridge.proxy.core.IProxy;
+import com.x.bridge.bean.SessionMsg;
+import com.x.bridge.dao.session.ISessionMsgDao;
+import com.x.bridge.dao.session.SessionMsgDao;
+import com.x.bridge.proxy.core.IProxyService;
 import com.x.bridge.transport.core.IWriter;
-import com.x.bridge.transport.mode.db.client.ClientWriteActor;
-import com.x.bridge.transport.mode.db.client.IClientWriteActor;
-import com.x.bridge.transport.mode.db.server.IServerWriteActor;
-import com.x.bridge.transport.mode.db.server.ServerWriteActor;
 import com.x.doraemon.therad.BalanceExecutor;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Arrays;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 
@@ -21,26 +20,26 @@ import java.util.concurrent.ExecutorService;
  * @date 2022/6/25 13:05
  */
 @Log4j2
-public class DBWriter implements IWriter {
+public class DBWriter implements IWriter<SessionMsg> {
     
-    private IProxy proxy;
+    private final IProxyService proxy;
     
-    private IServerWriteActor serverWriter = new ServerWriteActor();
+    private final ISessionMsgDao serverWriter = new SessionMsgDao();
     
-    private IClientWriteActor clientWriter = new ClientWriteActor();
+    private final ISessionMsgDao clientWriter = new SessionMsgDao();
     
-    private ArrayBlockingQueue<Message> queue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
+    private final Queue<SessionMsg> queue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
     
-    private volatile boolean hasMsg = false;
+    private  volatile boolean hasMsg = false;
     
-    private ExecutorService writer = new BalanceExecutor<String>("DB-Writer", 1);
+    private final ExecutorService writer = new BalanceExecutor<String>("DB-Writer", 1);
     
-    public DBWriter(IProxy proxy) {
+    public DBWriter(IProxyService proxy) {
         this.proxy = proxy;
     }
     
     @Override
-    public void write(Message... msgs) throws Exception {
+    public void write(SessionMsg... msgs) throws Exception {
         if (msgs != null || msgs.length > 0) {
             log.info("即将写入数据【{}】条", msgs.length);
             if (proxy.isServerMode()) {
@@ -53,8 +52,8 @@ public class DBWriter implements IWriter {
     
     @Override
     public void clear() {
-        LambdaQueryWrapper<Message> query = new LambdaQueryWrapper<>();
-        query.eq(Message::getProxyName, proxy.name());
+        LambdaQueryWrapper<SessionMsg> query = new LambdaQueryWrapper<>();
+        query.eq(SessionMsg::getProxyName, proxy.name());
         if (proxy.isServerMode()) {
             serverWriter.remove(query);
         } else {
