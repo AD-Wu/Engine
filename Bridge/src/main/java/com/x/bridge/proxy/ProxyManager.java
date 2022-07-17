@@ -29,4 +29,15 @@ public final class ProxyManager {
         }
         return proxies.get(conf.getName());
     }
+    
+    public static boolean startProxy(String name){
+        IProxy proxy = proxies.get(name);
+        return proxy.start();
+    }
+    
+    public static void stopProxy(String name){
+        IProxy proxy = proxies.get(name);
+        proxy.stop();
+    }
+    
 }
