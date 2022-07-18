@@ -1,9 +1,9 @@
-package com.x.bridge.transport.core;
+package com.x.bridge.bus.core;
 
 import com.x.bridge.proxy.core.IProxyService;
-import com.x.bridge.proxy.core.Service;
-import com.x.bridge.bean.SessionMsg;
-import com.x.bridge.proxy.enums.TransporterStatus;
+import com.x.bridge.netty.common.Service;
+import com.x.bridge.bean.SessionMessage;
+import com.x.bridge.proxy.enums.BusStatus;
 import com.x.doraemon.Strings;
 import com.x.doraemon.therad.BalanceExecutor;
 import lombok.extern.log4j.Log4j2;
@@ -17,40 +17,40 @@ import java.util.concurrent.*;
  * @date 2022/7/11 19:52
  */
 @Log4j2
-public class Transporter extends Service implements ITransporter {
+public class Bus extends Service implements IBus {
 
     private static final int maxBytes = 70000;
     private final IProxyService proxy;
-    private final IReader<SessionMsg> reader;
-    private final IWriter<SessionMsg> writer;
-    protected volatile TransporterStatus status;
+    private final IReader<SessionMessage> reader;
+    private final IWriter<SessionMessage> writer;
+    protected volatile BusStatus status;
 
     private final ScheduledExecutorService readerExecutor = Executors.newScheduledThreadPool(1);
     private final ExecutorService writerExecutor = new BalanceExecutor<String>("Writer", 1);
-    private final ArrayBlockingQueue<SessionMsg> queue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
+    private final ArrayBlockingQueue<SessionMessage> queue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
 
-    public Transporter(IProxyService proxy, IReader<SessionMsg> reader, IWriter<SessionMsg> writer) {
+    public Bus(IProxyService proxy, IReader<SessionMessage> reader, IWriter<SessionMessage> writer) {
         this.proxy = proxy;
         this.reader = reader;
         this.writer = writer;
-        this.status = TransporterStatus.stopped;
+        this.status = BusStatus.stopped;
     }
 
     @Override
     protected boolean onStart() throws Exception {
-        status = TransporterStatus.running;
+        status = BusStatus.running;
         readerExecutor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 try {
-                    SessionMsg[] msgs = reader.read();
-                    status = TransporterStatus.running;
-                    IReceiver receiver = getReceiver();
+                    SessionMessage[] msgs = reader.read();
+                    status = BusStatus.running;
+                    IReceiver receiver = receiver();
                     if (receiver != null) {
                         receiver.receive(msgs);
                     }
                 } catch (Exception e) {
-                    status = TransporterStatus.error;
+                    status = BusStatus.error;
                     e.printStackTrace();
                     log.error("传输引擎执行读取异常:{}", Strings.getExceptionTrace(e));
                 }
@@ -61,12 +61,12 @@ public class Transporter extends Service implements ITransporter {
             @Override
             public void run() {
                 while (true) {
-                    if (status == TransporterStatus.running) {
+                    if (status == BusStatus.running) {
                         try {
-                            SessionMsg[] msgs = getMessages();
-                            Transporter.this.writer.write(msgs);
+                            SessionMessage[] msgs = getMessages();
+                            Bus.this.writer.write(msgs);
                         } catch (Exception e) {
-                            status = TransporterStatus.error;
+                            status = BusStatus.error;
                             e.printStackTrace();
                             log.error("写入数据失败:{}", Strings.getExceptionTrace(e));
                         }
@@ -81,7 +81,7 @@ public class Transporter extends Service implements ITransporter {
 
     @Override
     protected void onStop() {
-        status = TransporterStatus.stopped;
+        status = BusStatus.stopped;
         readerExecutor.shutdown();
         writerExecutor.shutdown();
         queue.clear();
@@ -94,11 +94,11 @@ public class Transporter extends Service implements ITransporter {
 
 
     @Override
-    public void write(SessionMsg... msgs) throws Exception {
-        if (status == TransporterStatus.running) {
+    public void write(SessionMessage... msgs) throws Exception {
+        if (status == BusStatus.running) {
             if (msgs != null || msgs.length > 0) {
                 for (int i = 0, c = msgs.length; i < c; i++) {
-                    SessionMsg msg = msgs[i];
+                    SessionMessage msg = msgs[i];
                     queue.add(msg);
                 }
             }
@@ -109,12 +109,12 @@ public class Transporter extends Service implements ITransporter {
     }
 
     @Override
-    public IReceiver getReceiver() {
+    public IReceiver receiver() {
         return proxy;
     }
 
     @Override
-    public TransporterStatus status() {
+    public BusStatus status() {
         return status;
     }
 
@@ -123,8 +123,8 @@ public class Transporter extends Service implements ITransporter {
         writer.clear();
     }
 
-    private SessionMsg[] getMessages() {
-        List<SessionMsg> msgs = new ArrayList<>();
+    private SessionMessage[] getMessages() {
+        List<SessionMessage> msgs = new ArrayList<>();
         int sumBytes = 0;
         while (!queue.isEmpty() && (sumBytes = getSumBytes(sumBytes)) <= maxBytes) {
             msgs.add(queue.poll());
@@ -132,7 +132,7 @@ public class Transporter extends Service implements ITransporter {
         if (sumBytes > 0) {
             log.info("数据域字节总数【{}】", sumBytes);
         }
-        return msgs.toArray(new SessionMsg[0]);
+        return msgs.toArray(new SessionMessage[0]);
     }
 
     private int getSumBytes(int sumBytes) {

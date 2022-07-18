@@ -1,4 +1,4 @@
-package com.x.bridge.proxy.socket.client;
+package com.x.bridge.proxy.core.socket;
 
 /**
  * @author AD
@@ -8,7 +8,6 @@ package com.x.bridge.proxy.socket.client;
 import com.x.bridge.netty.interfaces.ISessionListener;
 import com.x.bridge.proxy.cmd.SessionCmd;
 import com.x.bridge.proxy.core.IProxyService;
-import com.x.bridge.proxy.core.Session;
 import com.x.bridge.util.ChannelHelper;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

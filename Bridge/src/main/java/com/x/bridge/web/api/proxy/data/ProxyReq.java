@@ -1,6 +1,6 @@
 package com.x.bridge.web.api.proxy.data;
 
-import com.x.bridge.proxy.enums.TransportMode;
+import com.x.bridge.proxy.enums.BusType;
 
 import java.util.Set;
 import java.util.StringJoiner;
@@ -25,12 +25,12 @@ public class ProxyReq {
     /**
      * 写模式
      */
-    protected String writeMode = TransportMode.DB.toString();
+    protected String writeMode = BusType.DB.toString();
     
     /**
      * 读模式
      */
-    protected String readMode = TransportMode.DB.toString();
+    protected String readMode = BusType.DB.toString();
     
     /**
      * 代理端口

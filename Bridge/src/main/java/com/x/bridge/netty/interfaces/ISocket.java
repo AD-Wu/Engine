@@ -1,6 +1,6 @@
 package com.x.bridge.netty.interfaces;
 
-import com.x.bridge.proxy.core.IService;
+import com.x.bridge.netty.common.IService;
 
 /**
  * 服务器接口

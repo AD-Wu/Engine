@@ -1,4 +1,4 @@
-package com.x.bridge.transport.core;
+package com.x.bridge.bus.core;
 
 /**
  * 传输对象

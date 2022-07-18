@@ -1,16 +1,15 @@
-package com.x.bridge.proxy.socket.server;
+package com.x.bridge.proxy.core.socket;
 
 /**
  * @author AD
  * @date 2022/7/12 14:54
  */
 
-import com.x.bridge.proxy.enums.ProxyStatus;
-import com.x.bridge.proxy.enums.TransporterStatus;
 import com.x.bridge.netty.interfaces.ISessionListener;
 import com.x.bridge.proxy.cmd.SessionCmd;
 import com.x.bridge.proxy.core.IProxyService;
-import com.x.bridge.proxy.core.Session;
+import com.x.bridge.proxy.enums.ProxyStatus;
+import com.x.bridge.proxy.enums.BusStatus;
 import com.x.bridge.util.ChannelHelper;
 import com.x.bridge.util.ChannelInfo;
 import io.netty.buffer.ByteBuf;
@@ -23,23 +22,23 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class SocketServerListener implements ISessionListener {
-    
+
     private final IProxyService proxy;
-    
+
     public SocketServerListener(IProxyService proxy) {
         this.proxy = proxy;
     }
-    
+
     @Override
     public void active(ChannelHandlerContext ctx) throws Exception {
         ProxyStatus status = proxy.status();
-        TransporterStatus tranStatus = proxy.getTransporter().status();
+        BusStatus tranStatus = proxy.getBus().status();
         if (status == ProxyStatus.syncStart) {
             log.info("代理【{}】同步启动中... , 连接将被关闭", proxy.name());
             ctx.close();
             return;
         }
-        if (status == ProxyStatus.running && tranStatus == TransporterStatus.running) {
+        if (status == ProxyStatus.running && tranStatus == BusStatus.running) {
             ChannelInfo ci = ChannelHelper.getChannelInfo(ctx);
             if (proxy.isAccept(ci.getRemoteHost())) {
                 log.info("代理【{}】连接建立【{}】,同步连接中...", proxy.name(), ci.getRemote());
@@ -56,9 +55,9 @@ public class SocketServerListener implements ISessionListener {
             ctx.close();
             return;
         }
-        
+
     }
-    
+
     @Override
     public void inActive(ChannelHandlerContext ctx) throws Exception {
         ChannelInfo ci = ChannelHelper.removeChannelInfo(ctx);
@@ -72,7 +71,7 @@ public class SocketServerListener implements ISessionListener {
             }
         }
     }
-    
+
     @Override
     public void receive(ChannelHandlerContext ctx, ByteBuf buf) throws Exception {
         ChannelInfo ci = ChannelHelper.getChannelInfo(ctx);
@@ -84,15 +83,15 @@ public class SocketServerListener implements ISessionListener {
             }
         }
     }
-    
+
     @Override
     public void timeout(ChannelHandlerContext ctx, IdleStateEvent event) throws Exception {
         ChannelInfo ci = ChannelHelper.removeChannelInfo(ctx);
     }
-    
+
     @Override
     public void error(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ChannelInfo ci = ChannelHelper.removeChannelInfo(ctx);
     }
-    
+
 }

@@ -1,8 +1,6 @@
-package com.x.bridge.proxy.socket.client;
+package com.x.bridge.proxy.core;
 
 import com.x.bridge.proxy.enums.ProxyStatus;
-import com.x.bridge.proxy.core.ProxyService;
-import com.x.bridge.proxy.core.ProxyConfig;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -11,27 +9,27 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class ProxyClient extends ProxyService {
-    
+
     public ProxyClient(ProxyConfig conf) {
         super(conf);
     }
-    
+
     @Override
     protected boolean onStart() throws Exception {
         startTransporter();
         sync(true);
         return true;
     }
-    
+
     @Override
     protected void onStop() {
         status = ProxyStatus.stopped;
-        transporter.stop();
+        bus.stop();
     }
-    
+
     @Override
     public boolean isServerMode() {
         return false;
     }
-    
+
 }

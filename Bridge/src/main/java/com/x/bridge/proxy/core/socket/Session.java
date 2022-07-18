@@ -1,9 +1,10 @@
-package com.x.bridge.proxy.core;
+package com.x.bridge.proxy.core.socket;
 
 import com.google.common.base.Objects;
 import com.x.bridge.proxy.cmd.ISessionCmd;
 import com.x.bridge.proxy.cmd.SessionCmd;
-import com.x.bridge.bean.SessionMsg;
+import com.x.bridge.bean.SessionMessage;
+import com.x.bridge.proxy.core.IProxyService;
 import com.x.doraemon.Strings;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.log4j.Log4j2;
@@ -24,7 +25,7 @@ public class Session {
 
     private final IProxyService proxy;
 
-    private final Map<Long, SessionMsg> receives;
+    private final Map<Long, SessionMessage> receives;
 
     private ChannelHandlerContext chn;
 
@@ -44,9 +45,9 @@ public class Session {
     }
 
     public void sendToProxy(int cmd, byte[] data) {
-        SessionMsg msg = buildMessage(cmd, data);
+        SessionMessage msg = buildMessage(cmd, data);
         try {
-            proxy.getTransporter().write(msg);
+            proxy.getBus().write(msg);
         } catch (Exception e) {
             e.printStackTrace();
             log.error("写入数据失败,异常原因:{}", Strings.getExceptionTrace(e));
@@ -57,14 +58,14 @@ public class Session {
         chn.write(data);
     }
 
-    public void receive(SessionMsg... msgs) {
+    public void receive(SessionMessage... msgs) {
         for (int i = 0; i < msgs.length; i++) {
-            SessionMsg msg = msgs[i];
+            SessionMessage msg = msgs[i];
             if (msg.getSeq() >= nextRecv) {
                 receives.put(msg.getSeq(), msg);
             }
         }
-        SessionMsg next = receives.remove(nextRecv);
+        SessionMessage next = receives.remove(nextRecv);
         if (next != null) {
             execute(next);
         }
@@ -81,10 +82,6 @@ public class Session {
         return proxy;
     }
 
-    public void setChannel(ChannelHandlerContext chn) {
-        this.chn = chn;
-    }
-
     public boolean isConnected() {
         return connected;
     }
@@ -93,7 +90,11 @@ public class Session {
         this.connected = connected;
     }
 
-    private void execute(SessionMsg msg) {
+    void setChannel(ChannelHandlerContext chn) {
+        this.chn = chn;
+    }
+
+    private void execute(SessionMessage msg) {
         if (nextRecv == msg.getSeq()) {
             synchronized (this) {
                 if (nextRecv == msg.getSeq()) {
@@ -103,23 +104,23 @@ public class Session {
                 nextRecvSeq();
             }
         }
-        SessionMsg next = receives.remove(nextRecv);
+        SessionMessage next = receives.remove(nextRecv);
         if (next != null) {
             execute(next);
         }
     }
 
-    private SessionMsg buildMessage(int cmd, byte[] data) {
+    private SessionMessage buildMessage(int cmd, byte[] data) {
         if (SessionCmd.get(cmd) == null) {
             throw new RuntimeException("非法命令【" + cmd + "】");
         }
-        SessionMsg msg = new SessionMsg();
+        SessionMessage msg = new SessionMessage();
         msg.setProxyName(proxy.config().getName());
         msg.setClient(appClient);
         msg.setCmd(cmd);
         msg.setSeq(nextSendSeq());
         msg.setData(data);
-        
+
         msg.setAppHost(proxy.config().getAppHost());
         msg.setAppPort(proxy.config().getAppPort());
         return msg;

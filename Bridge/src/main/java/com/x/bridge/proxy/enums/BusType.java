@@ -1,16 +1,16 @@
 package com.x.bridge.proxy.enums;
 
 import com.x.bridge.proxy.core.IProxyService;
-import com.x.bridge.transport.core.IReader;
-import com.x.bridge.transport.core.IWriter;
-import com.x.bridge.transport.factory.DBReader;
-import com.x.bridge.transport.factory.DBWriter;
+import com.x.bridge.bus.core.IReader;
+import com.x.bridge.bus.core.IWriter;
+import com.x.bridge.bus.factory.DBReader;
+import com.x.bridge.bus.factory.DBWriter;
 
 /**
  * @author AD
  * @date 2022/6/25 13:48
  */
-public enum TransportMode {
+public enum BusType {
     DB {
         @Override
         public IReader createReader(IProxyService proxy) {
@@ -23,8 +23,8 @@ public enum TransportMode {
         }
     };
 
-    public static TransportMode get(String mode) {
-        TransportMode tm = valueOf(mode.toUpperCase());
+    public static BusType get(String mode) {
+        BusType tm = valueOf(mode.toUpperCase());
         return tm;
     }
 
