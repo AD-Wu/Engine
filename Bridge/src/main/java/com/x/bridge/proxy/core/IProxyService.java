@@ -1,5 +1,6 @@
 package com.x.bridge.proxy.core;
 
+import com.x.bridge.bean.SessionMessage;
 import com.x.bridge.bus.core.IBus;
 import com.x.bridge.bus.core.IReceiver;
 import com.x.bridge.netty.common.IService;
@@ -11,7 +12,7 @@ import com.x.bridge.proxy.enums.ProxyStatus;
  * @author AD
  * @date 2022/6/21 14:52
  */
-public interface IProxyService<T> extends IService, IReceiver<T> {
+public interface IProxyService extends IService, IReceiver<SessionMessage> {
 
     String name();
 

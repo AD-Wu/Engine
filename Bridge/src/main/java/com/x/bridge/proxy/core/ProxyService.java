@@ -27,7 +27,7 @@ import static java.util.stream.Collectors.groupingBy;
  * @date 2022/7/14 17:02
  */
 @Log4j2
-public abstract class ProxyService extends Service implements IProxyService<SessionMessage> {
+public abstract class ProxyService extends Service implements IProxyService {
 
     protected final ProxyConfig conf;
 

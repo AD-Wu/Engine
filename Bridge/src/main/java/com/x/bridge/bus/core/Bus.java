@@ -22,7 +22,7 @@ public class Bus extends Service implements IBus<Message>{
     
     private static final int maxBytes = 70000;
     
-    private final IProxyService<Message> proxy;
+    private final IProxyService proxy;
     private final IReader<Message> reader;
     private final IWriter<Message> writer;
     protected volatile BusStatus status;
@@ -31,7 +31,7 @@ public class Bus extends Service implements IBus<Message>{
     private final ExecutorService writerExecutor = new BalanceExecutor<String>("Writer", 1);
     protected final Queue<Message> queue = new ArrayBlockingQueue<>(Integer.MAX_VALUE);
 
-    public Bus(IProxyService<Message> proxy, IReader<Message> reader, IWriter<Message> writer) {
+    public Bus(IProxyService proxy, IReader<Message> reader, IWriter<Message> writer) {
         this.proxy = proxy;
         this.reader = reader;
         this.writer = writer;
@@ -111,7 +111,7 @@ public class Bus extends Service implements IBus<Message>{
     }
 
     @Override
-    public IReceiver<Message> receiver() {
+    public IReceiver receiver() {
         return proxy;
     }
 
