@@ -1,39 +1,33 @@
 package com.x.bridge.proxy.core;
 
-import static java.util.stream.Collectors.groupingBy;
-
 import com.x.bridge.bean.Message;
 import com.x.bridge.bean.SessionMessage;
+import com.x.bridge.bus.core.*;
 import com.x.bridge.netty.common.Service;
 import com.x.bridge.proxy.ProxyManager;
 import com.x.bridge.proxy.cmd.Cmd;
 import com.x.bridge.proxy.core.socket.Session;
+import com.x.bridge.proxy.enums.BusType;
 import com.x.bridge.proxy.enums.MsgType;
 import com.x.bridge.proxy.enums.ProxyStatus;
-import com.x.bridge.proxy.enums.BusType;
-import com.x.bridge.bus.core.IReader;
-import com.x.bridge.bus.core.IBus;
-import com.x.bridge.bus.core.IWriter;
-import com.x.bridge.bus.core.MessageBus;
 import com.x.doraemon.Strings;
 import com.x.doraemon.therad.BalanceExecutor;
+import lombok.extern.log4j.Log4j2;
+
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-import lombok.extern.log4j.Log4j2;
+
+import static java.util.stream.Collectors.groupingBy;
 
 /**
  * @author AD
  * @date 2022/7/14 17:02
  */
 @Log4j2
-public abstract class ProxyService extends Service implements IProxyService {
+public abstract class ProxyService extends Service implements IProxyService<SessionMessage> {
 
     protected final ProxyConfig conf;
 
@@ -45,13 +39,13 @@ public abstract class ProxyService extends Service implements IProxyService {
 
     protected volatile ProxyStatus status = ProxyStatus.creating;
 
-    protected IBus bus;
+    protected IBus<Message> bus;
 
     public ProxyService(ProxyConfig conf) {
         this.conf = conf;
         IReader reader = BusType.get(conf.getReadMode()).createReader(this);
         IWriter writer = BusType.get(conf.getWriteMode()).createWriter(this);
-        this.bus = new MessageBus(this, reader, writer);
+        this.bus = new Bus(this, reader, writer);
     }
 
     @Override

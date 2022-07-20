@@ -20,6 +20,8 @@ public class Proxy implements Serializable {
     
     private boolean serverMode;
     
+    private boolean out;
+    
     private int timeout;
     
     private String writeMode;
@@ -64,6 +66,14 @@ public class Proxy implements Serializable {
     
     public void setServerMode(boolean serverMode) {
         this.serverMode = serverMode;
+    }
+    
+    public boolean isOut() {
+        return out;
+    }
+    
+    public void setOut(boolean out) {
+        this.out = out;
     }
     
     public int getTimeout() {
