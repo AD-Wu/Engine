@@ -1,11 +1,13 @@
 package com.x.bridge.bean;
 
+import java.io.Serializable;
+
 /**
  * 代理服务端请求
  * @author AD
  * @date 2022/7/17 13:31
  */
-public class Message {
+public class Message implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

@@ -14,7 +14,7 @@ import com.x.bridge.proxy.enums.BusType;
 import com.x.bridge.bus.core.IReader;
 import com.x.bridge.bus.core.IBus;
 import com.x.bridge.bus.core.IWriter;
-import com.x.bridge.bus.core.Bus;
+import com.x.bridge.bus.core.MessageBus;
 import com.x.doraemon.Strings;
 import com.x.doraemon.therad.BalanceExecutor;
 import java.nio.charset.StandardCharsets;
@@ -51,7 +51,7 @@ public abstract class ProxyService extends Service implements IProxyService {
         this.conf = conf;
         IReader reader = BusType.get(conf.getReadMode()).createReader(this);
         IWriter writer = BusType.get(conf.getWriteMode()).createWriter(this);
-        this.bus = new Bus(this, reader, writer);
+        this.bus = new MessageBus(this, reader, writer);
     }
 
     @Override
